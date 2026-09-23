@@ -1,0 +1,10 @@
+import { useState } from "react";
+import { ChevronDown, ArrowRight } from "lucide-react";
+import { faqs } from "@/data/localData";
+
+export default function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(null);
+  return (
+    <section className="py-24 bg-brand-surface" id="faq"><div className="max-w-[1440px] mx-auto px-6 lg:px-12"><div className="grid grid-cols-1 lg:grid-cols-12 gap-12"><div className="lg:col-span-4"><div className="lg:sticky lg:top-28"><span className="text-xs font-bold uppercase tracking-widest text-brand-coral font-ibmmono">// Perguntas Frequentes</span><h2 className="text-3xl md:text-4xl font-extrabold text-brand-onyx tracking-tight mt-2">Dúvidas?<br />Nós Respondemos.</h2><p className="text-brand-text-secondary text-xs md:text-sm mt-3 leading-relaxed">Encontre respostas rápidas sobre prazos de entrega last mile, integração de sistemas, transporte rodoviário e armazenagem.</p><div className="mt-8 p-6 bg-brand-surface-alt rounded-card border border-brand-border"><h3 className="text-sm font-bold text-brand-onyx">Precisa de uma proposta personalizada?</h3><p className="text-xs text-brand-text-secondary mt-1">Nossos consultores estão à disposição.</p><a href="mailto:comercial@ngstransportes.com.br" className="inline-flex items-center gap-2 text-xs font-bold text-brand-coral mt-4"><span>Falar com um Especialista</span><ArrowRight className="w-2.5 h-2.5" /></a></div></div></div><div className="lg:col-span-8 space-y-3">{faqs.map((faq, i) => <div key={faq.id} className="border border-brand-border rounded-xl bg-white overflow-hidden"><button className="w-full px-6 py-4 text-left flex justify-between items-center text-sm font-bold text-brand-onyx hover:bg-brand-surface-alt/50" onClick={() => setOpenIndex(openIndex === i ? null : i)}><span>{faq.question}</span><ChevronDown className={`w-3.5 h-3.5 text-brand-coral transition-transform ${openIndex === i ? "rotate-180" : ""}`} /></button>{openIndex === i && <div className="px-6 pb-4 pt-1 text-xs text-brand-text-secondary leading-relaxed border-t border-brand-border/40">{faq.answer}</div>}</div>)}</div></div></div></section>
+  );
+}
