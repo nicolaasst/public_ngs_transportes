@@ -9,8 +9,8 @@ export default {
       borderRadius: { btn: "10px", card: "20px" },
       colors: {
         "brand-onyx": "#0d0d0d",
-        "brand-coral": "#ff5a33",
-        "brand-coral-hover": "#e84722",
+        "brand-coral": "#FFC0003",
+        "brand-coral-hover": "#FFDE21",
         "brand-surface": "#f7f7f5",
         "brand-surface-alt": "#f1f0ed",
         "brand-border": "#e3e1dc",
