@@ -22,6 +22,9 @@ export default function Tracking() {
   const [fator, setFator] = useState(inicial.fator ?? "");
   const [consulta, setConsulta] = useState(/** @type {{ estado: string, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
+  // última consulta feita (para "Atualizar" e para a atualização automática, sem reler o que o visitante digitou depois)
+  const ultima = useRef(/** @type {{ codigo: string, fator: string } | null} */ (null));
+  const [atualizando, setAtualizando] = useState(false);
 
   // página de resultado fora dos buscadores
   useEffect(() => {
@@ -33,9 +36,29 @@ export default function Tracking() {
   }, []);
 
   const enviar = async (c = codigo, f = fator) => {
+    ultima.current = { codigo: c, fator: f };
     setConsulta({ estado: "carregando" });
     setConsulta(await consultarRastreio({ codigo: c, fator: f }));
   };
+
+  // Atualiza o resultado já exibido sem piscar a tela; se a nova consulta falhar, mantém o último resultado bom.
+  const atualizar = async () => {
+    if (!ultima.current || atualizando) return;
+    setAtualizando(true);
+    const nova = await consultarRastreio(ultima.current);
+    setAtualizando(false);
+    if (nova.estado === "ok" || nova.estado === "nao_encontrado") setConsulta(nova);
+  };
+
+  // Pedido em rota: reconsulta sozinho a cada 90 s enquanto a aba estiver visível.
+  const emRota = consulta.estado === "ok" && consulta.dados?.em_rota === true;
+  const atualizarRef = useRef(atualizar);
+  atualizarRef.current = atualizar;
+  useEffect(() => {
+    if (!emRota) return undefined;
+    const id = setInterval(() => { if (document.visibilityState === "visible") atualizarRef.current(); }, 90_000);
+    return () => clearInterval(id);
+  }, [emRota]);
 
   // vindo do formulário da home (código e confirmação chegam por state de rota, nunca pela URL)
   useEffect(() => {
@@ -62,7 +85,7 @@ export default function Tracking() {
             </div>
             <div className="max-w-xl mx-auto" aria-live="polite">
               {aviso && <p role="alert" className="mt-6 p-4 bg-white/10 border border-white/10 rounded-card text-sm">{aviso}</p>}
-              {consulta.estado === "ok" && <ResultadoRastreio dados={consulta.dados} />}
+              {consulta.estado === "ok" && <ResultadoRastreio dados={consulta.dados} onAtualizar={atualizar} atualizando={atualizando} />}
             </div>
           </div>
         </section>

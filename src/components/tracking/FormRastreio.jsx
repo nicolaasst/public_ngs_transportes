@@ -12,7 +12,7 @@ export default function FormRastreio({ codigo, fator, onCodigo, onFator, onEnvia
     <form onSubmit={(e) => { e.preventDefault(); onEnviar(); }} className="space-y-3 text-left">
       <div>
         <label htmlFor={idCodigo} className={compacto ? "text-[11px] font-semibold text-brand-onyx" : "text-xs font-semibold"}>Código do pedido</label>
-        <input id={idCodigo} required autoComplete="off" value={codigo} onChange={(e) => onCodigo(e.target.value)} placeholder="Ex.: NX-1234" className={`${campo} font-ibmmono mt-1`} />
+        <input id={idCodigo} required autoComplete="off" value={codigo} onChange={(e) => onCodigo(e.target.value)} placeholder="Ex.: AA123456789BR ou nº do pedido" className={`${campo} font-ibmmono mt-1`} />
       </div>
       <div>
         <label htmlFor={idFator} className={compacto ? "text-[11px] font-semibold text-brand-onyx" : "text-xs font-semibold"}>Confirmação</label>

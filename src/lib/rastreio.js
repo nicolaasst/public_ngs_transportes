@@ -1,5 +1,10 @@
-// Cliente da API pública de rastreio (Edge Function `rastreio-publico` do NGS Conect).
+// Cliente da API pública de rastreio: Edge Function `rastreio-publico` do projeto Supabase do NGS Tracker
+// (supabase/functions/rastreio-publico no repositório ngs_tracker_sup). O Tracker é a ÚNICA fonte dos dados:
+// este portal não tem banco, não guarda chaves e não tem alternativa/fallback para outra infraestrutura.
 // O 2º fator (CNPJ/CPF ou 4 últimos dígitos do telefone) vai SEMPRE no corpo do POST, nunca na URL nem no histórico.
+//
+// Resposta 200: { codigo, situacao, destino, previsao_entrega, eventos: [{ texto, em }] (mais recente primeiro),
+//                 em_rota, posicao: null | { oculto: true } | { centro: { lat, lng }, raio_m }, atualizado_em }
 
 export const MENSAGEM_NAO_ENCONTRADO = "Pedido não encontrado. Confira o código e o dado de confirmação.";
 
