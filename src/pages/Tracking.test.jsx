@@ -25,7 +25,7 @@ async function preencher(user) {
 }
 const abrir = (state) => render(<MemoryRouter initialEntries={[{ pathname: "/rastreamento", state }]}><Tracking /></MemoryRouter>);
 
-beforeEach(() => { consultar.mockReset(); mapa.mockReset(); });
+beforeEach(() => { consultar.mockReset(); mapa.mockReset(); mapa.mockImplementation(() => {}); });
 
 describe("página de rastreio", () => {
   it("mostra carregando e depois a situação e a linha do tempo", async () => {
@@ -95,5 +95,61 @@ describe("página de rastreio", () => {
     expect(document.head.querySelector('meta[name="robots"]')?.getAttribute("content")).toContain("noindex");
     expect(screen.getByLabelText("Código do pedido")).toBeRequired();
     expect(screen.getByLabelText("Confirmação")).toBeRequired();
+  });
+
+  it("sem eventos mostra uma mensagem clara em vez de uma lista vazia", async () => {
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, eventos: [] }) });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    expect(await screen.findByText(/Ainda não há movimentações registradas/)).toBeInTheDocument();
+  });
+
+  it("resposta sem a lista de eventos não quebra a página", async () => {
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, eventos: undefined }) });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    expect(await screen.findByText(/Ainda não há movimentações registradas/)).toBeInTheDocument();
+  });
+
+  it("'Atualizar' reconsulta com o código e a confirmação usados e troca o resultado, sem tela de carregando", async () => {
+    consultar.mockResolvedValueOnce({ estado: "ok", dados: dados({ em_rota: false, situacao: "Saiu para entrega" }) });
+    consultar.mockResolvedValueOnce({ estado: "ok", dados: dados({ em_rota: false, situacao: "Entregue em 17/10/2026" }) });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    await screen.findByText("Saiu para entrega", { selector: "p" });
+    await user.clear(screen.getByLabelText("Código do pedido")); // o que o visitante digitar depois não vale para "Atualizar"
+    await user.click(screen.getByRole("button", { name: /^atualizar$/i }));
+    expect(await screen.findByText("Entregue em 17/10/2026")).toBeInTheDocument();
+    expect(consultar).toHaveBeenLastCalledWith({ codigo: "NX-1234", fator: "4455" });
+  });
+
+  it("se a atualização falhar por rede, mantém o último resultado", async () => {
+    consultar.mockResolvedValueOnce({ estado: "ok", dados: dados({ em_rota: false }) });
+    consultar.mockResolvedValueOnce({ estado: "rede" });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    await screen.findByText("Em rota de entrega");
+    await user.click(screen.getByRole("button", { name: /^atualizar$/i }));
+    await waitFor(() => expect(consultar).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("Em rota de entrega")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+});
+
+describe("falha do mapa", () => {
+  it("se o mapa quebrar, o resultado do rastreio continua na tela", async () => {
+    mapa.mockImplementation(() => { throw new Error("leaflet falhou"); });
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ posicao: { centro: { lat: -23.55, lng: -46.63 }, raio_m: 900 } }) });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    expect(await screen.findByText(/Não foi possível carregar o mapa/)).toBeInTheDocument();
+    expect(screen.getByText("Em rota de entrega")).toBeInTheDocument();
+    spy.mockRestore();
   });
 });

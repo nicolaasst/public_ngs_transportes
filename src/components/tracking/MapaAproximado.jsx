@@ -20,8 +20,11 @@ export default function MapaAproximado({ centro, raioM }) {
       mapa.removeLayer(camada);
       camada = L.tileLayer(tiles.reserva.url, { attribution: tiles.reserva.atribuicao, maxZoom: 14 }).addTo(mapa);
     });
-    const circulo = L.circle([centro.lat, centro.lng], { radius: raioM, color: "#b45309", weight: 2, fillColor: "#fbbf24", fillOpacity: 0.25 }).addTo(mapa);
-    mapa.fitBounds(circulo.getBounds(), { padding: [24, 24] });
+    // O enquadramento sai da geometria (lado = 2 × raio), não de circulo.getBounds(): este exige o mapa já posicionado
+    // e lançava erro quando o círculo era adicionado antes de qualquer setView (a tela inteira ficava em branco).
+    const alvo = L.latLng(centro.lat, centro.lng);
+    mapa.fitBounds(alvo.toBounds(raioM * 2), { padding: [24, 24] });
+    L.circle(alvo, { radius: raioM, color: "#b45309", weight: 2, fillColor: "#fbbf24", fillOpacity: 0.25 }).addTo(mapa);
     return () => { mapa.remove(); };
   }, [centro.lat, centro.lng, raioM]);
 
