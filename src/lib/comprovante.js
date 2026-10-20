@@ -57,17 +57,48 @@ export function abrirComprovante(dados, { abrir = window.open.bind(window), cria
   return true;
 }
 
-/** Baixa o comprovante em PDF (jsPDF carregado só quando o botão é usado). */
-export async function baixarComprovante(dados) {
+/**
+ * Carrega a foto de comprovação como JPEG (data URL) para incorporar ao PDF. Usa <img crossOrigin="anonymous"> (o bucket
+ * público do comprovante responde `Access-Control-Allow-Origin: *`); qualquer formato que o navegador decodifique vira JPEG.
+ * Devolve null se a imagem não carregar (sem CORS, offline, URL quebrada): o PDF então traz o link no lugar.
+ */
+export function carregarImagem(url, { max = 1200, tempoMs = 15000 } = {}) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timer = setTimeout(() => resolve(null), tempoMs);
+    const fim = (v) => { clearTimeout(timer); resolve(v); };
+    img.crossOrigin = "anonymous";
+    img.referrerPolicy = "no-referrer";
+    img.onload = () => {
+      try {
+        const escala = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * escala));
+        const h = Math.max(1, Math.round(img.naturalHeight * escala));
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        fim({ dataUrl: canvas.toDataURL("image/jpeg", 0.85), w, h });
+      } catch { fim(null); }
+    };
+    img.onerror = () => fim(null);
+    img.src = url;
+  });
+}
+
+/** Baixa o comprovante em PDF (jsPDF carregado só quando o botão é usado), com as fotos de comprovação INCORPORADAS. */
+export async function baixarComprovante(dados, { carregar = carregarImagem } = {}) {
   const { jsPDF } = await import("jspdf");
   const c = dados?.comprovante || {};
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
   let y = 20;
+  const quebra = (altura) => { if (y + altura > 282) { pdf.addPage(); y = 20; } };
   const linha = (txt, tam = 11, negrito = false, avanco = 7) => {
     pdf.setFont("helvetica", negrito ? "bold" : "normal");
     pdf.setFontSize(tam);
     for (const parte of pdf.splitTextToSize(String(txt), 175)) {
-      if (y > 280) { pdf.addPage(); y = 20; }
+      quebra(avanco);
       pdf.text(parte, 17, y);
       y += avanco;
     }
@@ -79,11 +110,21 @@ export async function baixarComprovante(dados) {
   linha(`Destino: ${dados?.destino ?? "—"}`);
   linha(`Entregue em: ${fmt(c.entregue_em)}`);
   linha(`Recebido por: ${c.recebido_por || "Não informado"}`, 11, false, 9);
-  const arquivos = (c.arquivos || []).map(urlSegura).filter(Boolean);
+
+  const arquivos = (c.arquivos || []).map(urlSegura).filter(Boolean).slice(0, 4);
   if (arquivos.length) {
-    linha("Comprovação (links)", 12, true);
-    arquivos.forEach((u, i) => linha(`${i + 1}. ${u}`, 8, false, 5));
-    y += 4;
+    linha("Comprovação", 12, true);
+    const imagens = await Promise.all(arquivos.map((u) => carregar(u)));
+    imagens.forEach((img, i) => {
+      if (!img) { linha(`Foto ${i + 1} não pôde ser incorporada. Link: ${arquivos[i]}`, 8, false, 5); return; }
+      const maxW = 120, maxH = 120;
+      const proporcao = Math.min(maxW / img.w, maxH / img.h);
+      const w = img.w * proporcao, h = img.h * proporcao;
+      quebra(h + 4);
+      pdf.addImage(img.dataUrl, "JPEG", 17, y, w, h);
+      y += h + 6;
+    });
+    y += 2;
   }
   const eventos = (Array.isArray(dados?.eventos) ? dados.eventos : []).slice(0, 30);
   if (eventos.length) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Camera, CheckCircle, RefreshCw, Share2 } from "lucide-react";
+import LinhaDoTempo from "@/components/tracking/LinhaDoTempo";
 import ComprovanteModal from "@/components/tracking/ComprovanteModal";
 import { compartilharRastreio, temComprovante } from "@/lib/comprovante";
 
@@ -46,14 +47,7 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
       {eventos.length === 0 ? (
         <p className="mt-5 text-sm text-brand-text-secondary">Ainda não há movimentações registradas para este pedido.</p>
       ) : (
-        <ol className="mt-5 space-y-3 border-l-2 border-brand-border pl-4" aria-label="Histórico de movimentações">
-          {eventos.map((e, i) => (
-            <li key={`${e.em}-${i}`} className="text-sm">
-              <span className="font-semibold">{e.texto}</span>
-              <span className="block text-xs text-brand-text-secondary">{hora(e.em)}</span>
-            </li>
-          ))}
-        </ol>
+        <LinhaDoTempo eventos={eventos} />
       )}
 
       {aviso && <p role="status" className="mt-3 text-xs text-brand-text-secondary">{aviso}</p>}

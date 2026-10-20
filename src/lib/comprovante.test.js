@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { abrirComprovante, compartilharRastreio, esc, htmlComprovante, nomeArquivo, temComprovante, urlDeCompartilhamento, urlSegura } from "@/lib/comprovante";
+
+const pdfFalso = { addImage: vi.fn(), addPage: vi.fn(), text: vi.fn(), save: vi.fn(), setFont: vi.fn(), setFontSize: vi.fn(), splitTextToSize: (t) => [String(t)] };
+vi.mock("jspdf", () => ({ jsPDF: function () { return pdfFalso; } }));
+import { abrirComprovante, baixarComprovante, compartilharRastreio, esc, htmlComprovante, nomeArquivo, temComprovante, urlDeCompartilhamento, urlSegura } from "@/lib/comprovante";
 
 const dados = {
   codigo: "NGSSP123456789BR", situacao: "Entregue em 17/10/2026", destino: "São Paulo/SP",
@@ -71,5 +74,32 @@ describe("compartilharRastreio", () => {
     const abort = Object.assign(new Error("x"), { name: "AbortError" });
     expect(await compartilharRastreio(dados, { nav: { share: vi.fn().mockRejectedValue(abort), clipboard: { writeText: vi.fn() } }, origem: "https://p" })).toBe("cancelado");
     expect(await compartilharRastreio(dados, { nav: {}, origem: "https://p" })).toBe("falhou");
+  });
+});
+
+describe("baixarComprovante (PDF)", () => {
+  const um = (arquivos) => ({ ...dados, comprovante: { ...dados.comprovante, arquivos } });
+  it("incorpora a imagem no PDF (não só o link)", async () => {
+    Object.values(pdfFalso).forEach((f) => f.mockClear?.());
+    await baixarComprovante(um(["https://r2.exemplo/f1.jpg"]), { carregar: async () => ({ dataUrl: "data:image/jpeg;base64,AAAA", w: 800, h: 600 }) });
+    expect(pdfFalso.addImage).toHaveBeenCalledTimes(1);
+    expect(pdfFalso.addImage.mock.calls[0][0]).toBe("data:image/jpeg;base64,AAAA");
+    expect(pdfFalso.addImage.mock.calls[0][1]).toBe("JPEG");
+    expect(pdfFalso.save).toHaveBeenCalledWith("comprovante-entrega-NGSSP123456789BR.pdf");
+    const textos = pdfFalso.text.mock.calls.map((c) => c[0]).join(" ");
+    expect(textos).not.toContain("https://r2.exemplo/f1.jpg"); // nada de link no lugar da foto
+  });
+  it("se a foto não carrega (sem CORS/offline), o PDF traz o link como alternativa e ainda baixa", async () => {
+    Object.values(pdfFalso).forEach((f) => f.mockClear?.());
+    await baixarComprovante(um(["https://r2.exemplo/f1.jpg"]), { carregar: async () => null });
+    expect(pdfFalso.addImage).not.toHaveBeenCalled();
+    expect(pdfFalso.text.mock.calls.map((c) => c[0]).join(" ")).toContain("https://r2.exemplo/f1.jpg");
+    expect(pdfFalso.save).toHaveBeenCalled();
+  });
+  it("ignora URLs que não são https e limita a 4 fotos", async () => {
+    Object.values(pdfFalso).forEach((f) => f.mockClear?.());
+    const carregar = vi.fn(async () => ({ dataUrl: "data:image/jpeg;base64,AAAA", w: 100, h: 100 }));
+    await baixarComprovante(um(["http://x/a.jpg", "javascript:1", ...Array.from({ length: 6 }, (_, i) => `https://r2.exemplo/${i}.jpg`)]), { carregar });
+    expect(carregar).toHaveBeenCalledTimes(4);
   });
 });
