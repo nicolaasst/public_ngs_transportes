@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /rastreamento
 
-Sitemap: https://portalngstransportes.vercel.app/sitemap.xml
+Sitemap: https://portal.onlogsantanadeparnaiba.com.br/sitemap.xml
