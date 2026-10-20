@@ -1,4 +1,6 @@
-import { CheckCircle, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle, Download, ExternalLink, RefreshCw, Share2 } from "lucide-react";
+import { abrirComprovante, baixarComprovante, compartilharRastreio, temComprovante } from "@/lib/comprovante";
 
 const hora = (iso) => {
   const d = new Date(iso);
@@ -7,6 +9,19 @@ const hora = (iso) => {
 
 export default function ResultadoRastreio({ dados, onAtualizar, atualizando = false }) {
   const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
+  const [aviso, setAviso] = useState("");
+  const [baixando, setBaixando] = useState(false);
+  const entregue = temComprovante(dados);
+
+  const compartilhar = async () => {
+    const r = await compartilharRastreio(dados);
+    setAviso({ copiado: "Link do rastreio copiado.", falhou: "Não foi possível compartilhar. Copie o endereço da página.", compartilhado: "", cancelado: "" }[r]);
+  };
+  const abrir = () => setAviso(abrirComprovante(dados) ? "" : "O navegador bloqueou a nova aba. Permita pop-ups para abrir o comprovante.");
+  const baixar = async () => {
+    setBaixando(true);
+    try { await baixarComprovante(dados); setAviso(""); } catch { setAviso("Não foi possível gerar o PDF agora. Use “Abrir comprovante” e imprima."); } finally { setBaixando(false); }
+  };
   return (
     <section aria-label="Resultado do rastreio" className="mt-6 p-5 bg-white text-brand-onyx rounded-card text-left">
       <div className="flex items-start gap-3">
@@ -32,6 +47,23 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
           ))}
         </ol>
       )}
+
+      <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Ações do rastreio">
+        {entregue && (
+          <>
+            <button type="button" onClick={abrir} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn border border-brand-border text-xs font-semibold hover:bg-brand-surface-alt">
+              <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />Abrir comprovante de entrega
+            </button>
+            <button type="button" onClick={baixar} disabled={baixando} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn border border-brand-border text-xs font-semibold hover:bg-brand-surface-alt disabled:opacity-60">
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />{baixando ? "Gerando…" : "Baixar comprovante"}
+            </button>
+          </>
+        )}
+        <button type="button" onClick={compartilhar} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-btn border border-brand-border text-xs font-semibold hover:bg-brand-surface-alt">
+          <Share2 className="w-3.5 h-3.5" aria-hidden="true" />Compartilhar rastreio
+        </button>
+      </div>
+      {aviso && <p role="status" className="mt-2 text-xs text-brand-text-secondary">{aviso}</p>}
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-brand-border pt-3 text-xs text-brand-text-secondary">
         <span>{hora(dados.atualizado_em) ? `Consultado em ${hora(dados.atualizado_em)}` : ""}</span>
