@@ -1,11 +1,50 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, Building2, CheckCircle, Eye, History, MapPin, Route, ShieldCheck, Truck, Users, Zap } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import DiyeasButton from "@/components/ui/DiyeasButton";
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
+import Section from "@/components/rp/Section";
+import { Card } from "@/components/rp/Card";
+import { Icon } from "@/components/rp/Icon";
+import { Button } from "@/components/rp/Button";
+import { BRAND, TELAS_APP } from "@/lib/brandAssets";
 
-const milestones = [{ year: "2008", title: "Fundação em São Paulo", desc: "Início das operações com foco em entregas expressas corporativas.", icon: MapPin }, { year: "2013", title: "Expansão Sudeste", desc: "Ampliação da malha rodoviária para São Paulo, Minas Gerais e Rio de Janeiro.", icon: Route }, { year: "2018", title: "Roteirização Inteligente", desc: "Evolução da operação com otimização de rotas e telemetria veicular.", icon: Zap }, { year: "2022", title: "Mega Hub Cajamar", desc: "Inauguração do centro de distribuição e do cross-docking integrado.", icon: Building2 }, { year: "2024", title: "Frotas Conectadas", desc: "Telemetria em toda a frota dedicada e parceira.", icon: Truck }];
-const values = [{ icon: Eye, title: "Visibilidade em Tempo Real", desc: "Transparência em cada etapa do transporte." }, { icon: ShieldCheck, title: "Custódia Segura", desc: "Gerenciamento de risco ativo e cobertura adequada." }, { icon: CheckCircle, title: "Pontualidade", desc: "Indicadores operacionais acompanhados de perto." }, { icon: Zap, title: "Sustentabilidade", desc: "Frota e processos em evolução para reduzir emissões." }];
-const stats = [{ icon: History, value: "+18 Anos", label: "De mercado" }, { icon: MapPin, value: "+1.200", label: "Cidades atendidas" }, { icon: CheckCircle, value: "99,6%", label: "Pontualidade" }, { icon: Users, value: "+15.000", label: "Clientes B2B" }];
+const valores = [
+  { icone: "visibility", titulo: "Visibilidade", texto: "Transparência em cada etapa do transporte." },
+  { icone: "shield", titulo: "Cuidado com a carga", texto: "Atenção ao manuseio e ao registro de cada entrega." },
+  { icone: "schedule", titulo: "Pontualidade", texto: "Prazos acompanhados de perto pela operação." },
+  { icone: "eco", titulo: "Melhoria contínua", texto: "Processos e rotas revistos para gastar menos tempo e combustível." },
+];
 
-export default function About() { return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><div className="w-full bg-brand-surface-alt border-b border-brand-border"><div className="max-w-[1392px] mx-auto px-6 lg:px-12 py-3 flex gap-2 text-xs text-brand-text-secondary"><Link to="/">Início</Link><span>/</span><span className="font-semibold text-brand-onyx">Quem Somos</span></div></div><section className="py-16"><div className="max-w-[1392px] mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-10 items-center"><div><span className="font-ibmmono text-xs text-brand-coral uppercase font-semibold">// Ngs Transportes</span><h1 className="text-3xl md:text-5xl font-extrabold text-brand-onyx mt-2">Logística que conecta negócios e pessoas</h1><p className="text-brand-text-secondary mt-5 leading-relaxed">Somos uma operação brasileira de transporte terrestre, distribuição urbana e soluções logísticas para empresas que precisam de previsibilidade, cuidado e escala.</p><Link to="/contato" className="inline-block mt-6"><DiyeasButton size="lg" iconRight={ArrowRight}>Fale Conosco</DiyeasButton></Link></div><div className="grid grid-cols-2 gap-4">{stats.map((stat) => <div key={stat.label} className="p-5 rounded-card bg-brand-surface-alt border border-brand-border"><stat.icon className="w-7 h-7 text-brand-coral mb-3" /><div className="text-2xl font-extrabold text-brand-onyx">{stat.value}</div><p className="text-xs text-brand-text-secondary uppercase tracking-wider font-semibold mt-1">{stat.label}</p></div>)}</div></div></section><section className="py-16 bg-brand-surface-alt"><div className="max-w-[1392px] mx-auto px-6 lg:px-12"><h2 className="text-2xl md:text-3xl font-extrabold text-brand-onyx mb-8">Nossa trajetória</h2><div className="space-y-4">{milestones.map((item) => <div key={item.year} className="flex gap-4 p-5 bg-white rounded-card border border-brand-border"><div className="w-12 h-12 rounded-full bg-brand-coral/10 text-brand-coral flex items-center justify-center shrink-0"><item.icon className="w-5 h-5" /></div><div><span className="font-ibmmono text-xs text-brand-coral">{item.year}</span><h3 className="font-bold text-brand-onyx">{item.title}</h3><p className="text-sm text-brand-text-secondary mt-1">{item.desc}</p></div></div>)}</div></div></section><section className="py-16"><div className="max-w-[1392px] mx-auto px-6 lg:px-12"><h2 className="text-2xl md:text-3xl font-extrabold text-brand-onyx mb-8">O que orienta o nosso trabalho</h2><div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">{values.map((value) => <div key={value.title} className="p-6 rounded-card bg-brand-surface-alt border border-brand-border"><value.icon className="w-7 h-7 text-brand-coral mb-4" /><h3 className="font-bold text-brand-onyx">{value.title}</h3><p className="text-sm text-brand-text-secondary mt-2">{value.desc}</p></div>)}</div></div></section></main><Footer /></div>; }
+export default function About() {
+  return (
+    <PageShell titulo="Quem somos">
+      <PageHero eyebrow="NGS Transportes" titulo="Logística que conecta negócios e pessoas" texto="Operação de transporte terrestre, distribuição urbana e soluções logísticas para empresas que precisam de previsibilidade e cuidado.">
+        <Button to="/contato" className="mt-6">Fale conosco</Button>
+      </PageHero>
+      <Section eyebrow="Nossa marca" titulo="Sua carga em todo o Brasil">
+        <div className="grid items-center gap-8 lg:grid-cols-2">
+          <img src={BRAND.container} alt="Contêiner NGS Transportes sendo içado, cercado por caixas com paraquedas" loading="lazy" className="w-full" />
+          <div className="space-y-4 text-body-lg text-muted-foreground">
+            <p>A NGS Transportes atua com entregas last mile, cross-docking, fulfillment e transporte rodoviário.</p>
+            <p>Os motoristas usam o aplicativo NGS Delivery para registrar cada parada, e o portal de rastreamento mostra ao cliente o andamento e o comprovante de entrega.</p>
+          </div>
+        </div>
+      </Section>
+      <Section tom="muted" eyebrow="Tecnologia própria" titulo="Do aplicativo do motorista ao portal do cliente">
+        <div className="grid items-center gap-8 md:grid-cols-[auto_1fr]">
+          <img src={TELAS_APP.mapa} alt="Mapa de rota do aplicativo NGS Delivery" loading="lazy" className="mx-auto w-[220px] rounded-3xl border border-border shadow-lg" />
+          <p className="max-w-xl text-body-lg text-muted-foreground">O aplicativo organiza as paradas do dia, orienta o trajeto e registra a entrega com foto e dados do recebedor. Essas informações alimentam a linha do tempo exibida no rastreamento.</p>
+        </div>
+      </Section>
+      <Section eyebrow="Valores" titulo="O que orienta o nosso trabalho">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {valores.map((v) => (
+            <Card key={v.titulo}>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name={v.icone} size={26} /></span>
+              <h3 className="text-headline-sm mt-4">{v.titulo}</h3>
+              <p className="mt-2 text-body-md text-muted-foreground">{v.texto}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+    </PageShell>
+  );
+}

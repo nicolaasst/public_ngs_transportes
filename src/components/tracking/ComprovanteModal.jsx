@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Download, Share2 } from "lucide-react";
+import { Icon } from "@/components/rp/Icon";
+import { Button } from "@/components/rp/Button";
+import { MonoText } from "@/components/rp/MonoText";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { baixarComprovante, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
 
@@ -7,8 +9,6 @@ const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }) : "—";
 };
-
-const botao = "inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-btn text-xs font-semibold disabled:opacity-60";
 
 /** Modal do comprovante de entrega: informações + comprovação + Baixar / Compartilhar / Imprimir. */
 export default function ComprovanteModal({ dados, aberto, onFechar }) {
@@ -28,43 +28,43 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
 
   return (
     <Dialog open={aberto} onOpenChange={(v) => { if (!v) { setAviso(""); onFechar(); } }}>
-      <DialogContent className="bg-white text-brand-onyx max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card text-card-foreground rounded-2xl border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Comprovante de entrega</DialogTitle>
-          <DialogDescription>Pedido {dados?.codigo}</DialogDescription>
+          <DialogTitle className="text-headline-md">Comprovante de entrega</DialogTitle>
+          <DialogDescription asChild><p className="text-body-md text-muted-foreground">Pedido <MonoText size="sm">{dados?.codigo}</MonoText></p></DialogDescription>
         </DialogHeader>
 
-        <dl className="grid grid-cols-[120px_1fr] gap-x-3 gap-y-2 text-sm">
-          <dt className="text-brand-text-secondary">Situação</dt><dd className="font-semibold">{dados?.situacao || "Entregue"}</dd>
-          <dt className="text-brand-text-secondary">Entregue em</dt><dd className="font-semibold">{fmt(c.entregue_em)}</dd>
-          <dt className="text-brand-text-secondary">Recebido por</dt><dd className="font-semibold">{c.recebido_por || "Não informado"}</dd>
-          <dt className="text-brand-text-secondary">Destino</dt><dd className="font-semibold">{dados?.destino || "—"}</dd>
+        <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-3 rounded-2xl bg-muted p-4 text-body-md">
+          <dt className="text-muted-foreground">Situação</dt><dd className="text-label-lg">{dados?.situacao || "Entregue"}</dd>
+          <dt className="text-muted-foreground">Entregue em</dt><dd className="text-label-lg">{fmt(c.entregue_em)}</dd>
+          <dt className="text-muted-foreground">Recebido por</dt><dd className="text-label-lg">{c.recebido_por || "Não informado"}</dd>
+          <dt className="text-muted-foreground">Destino</dt><dd className="text-label-lg">{dados?.destino || "—"}</dd>
         </dl>
 
         {fotos.length > 0 ? (
           <div>
-            <p className="text-xs font-semibold mb-2">Comprovação</p>
+            <p className="text-label-sm uppercase text-muted-foreground mb-2">Comprovação</p>
             <div className="flex flex-wrap gap-2">
               {fotos.map((f) => (
                 <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprovação em tamanho maior">
-                  <img src={f.inline || f.url} alt="Comprovação da entrega" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-lg border border-brand-border object-cover" />
+                  <img src={f.inline || f.url} alt="Comprovação da entrega" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-2xl border border-border object-cover" />
                 </a>
               ))}
             </div>
           </div>
         ) : (
-          <p className="text-xs text-brand-text-secondary">Nenhuma foto de comprovação foi registrada para esta entrega.</p>
+          <p className="text-body-sm text-muted-foreground">Nenhuma foto de comprovação foi registrada para esta entrega.</p>
         )}
 
         <div className="flex flex-wrap gap-2 pt-1">
-          <button type="button" onClick={baixar} disabled={baixando} className={`${botao} bg-brand-coral text-white`}>
-            <Download className="w-4 h-4" aria-hidden="true" />{baixando ? "Gerando…" : "Baixar comprovante"}
-          </button>
-          <button type="button" onClick={compartilhar} className={`${botao} border border-brand-border`}>
-            <Share2 className="w-4 h-4" aria-hidden="true" />Compartilhar
-          </button>
+          <Button onClick={baixar} loading={baixando} disabled={baixando} size="sm">
+            {!baixando && <Icon name="download" size={18} />}{baixando ? "Gerando…" : "Baixar comprovante"}
+          </Button>
+          <Button variant="outline" onClick={compartilhar} size="sm">
+            <Icon name="share" size={18} />Compartilhar
+          </Button>
         </div>
-        {aviso && <p role="status" className="text-xs text-brand-text-secondary">{aviso}</p>}
+        {aviso && <p role="status" className="text-body-sm text-muted-foreground">{aviso}</p>}
       </DialogContent>
     </Dialog>
   );

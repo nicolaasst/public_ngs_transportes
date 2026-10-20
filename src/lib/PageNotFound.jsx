@@ -1,14 +1,22 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import PageShell from "@/components/layout/PageShell";
+import Section from "@/components/rp/Section";
+import { EmptyState } from "@/components/rp/EmptyState";
+import { Button } from "@/components/rp/Button";
+import { MASCOTES } from "@/lib/brandAssets";
 
 export default function PageNotFound() {
   const { pathname } = useLocation();
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="space-y-2"><h1 className="text-7xl font-light text-slate-300">404</h1><div className="h-0.5 w-16 bg-slate-200 mx-auto" /></div>
-        <div className="space-y-3"><h2 className="text-2xl font-medium text-slate-800">Página não encontrada</h2><p className="text-slate-600 leading-relaxed">O endereço <span className="font-medium text-slate-700">"{pathname}"</span> não existe nesta aplicação.</p></div>
-        <Link to="/" className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">Voltar ao início</Link>
-      </div>
-    </div>
+    <PageShell titulo="Página não encontrada">
+      <Section>
+        <EmptyState
+          illustration={MASCOTES.circleThinking}
+          title="Página não encontrada"
+          subtitle={`O endereço "${pathname}" não existe neste site.`}
+          action={<div className="flex flex-wrap justify-center gap-3"><Button to="/">Voltar ao início</Button><Button to="/rastreamento" variant="outline">Rastrear encomenda</Button></div>}
+        />
+      </Section>
+    </PageShell>
   );
 }

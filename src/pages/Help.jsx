@@ -1,6 +1,41 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Headphones } from "lucide-react";
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
+import Section from "@/components/rp/Section";
+import { Card } from "@/components/rp/Card";
+import { Icon } from "@/components/rp/Icon";
+import { Button } from "@/components/rp/Button";
 import { helpCategories } from "@/lib/help-categories";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-export default function Help() { return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><section className="py-16 bg-brand-onyx text-white"><div className="max-w-[1100px] mx-auto px-6 lg:px-12"><span className="font-ibmmono text-xs text-brand-coral uppercase font-semibold">// Central de ajuda</span><h1 className="text-3xl md:text-5xl font-extrabold mt-2">Encontre respostas para sua operação</h1><p className="text-white/60 mt-4 max-w-2xl">Documentação prática para coleta, transporte, rastreamento, faturamento e integrações.</p></div></section><section className="py-16"><div className="max-w-[1100px] mx-auto px-6 lg:px-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">{helpCategories.map((category) => <Link key={category.slug} to={`/ajuda/${category.slug}`} className="p-6 rounded-card bg-brand-surface-alt border border-brand-border group"><category.icon className="w-7 h-7 text-brand-coral mb-4" /><span className="font-ibmmono text-xs text-brand-text-secondary">{category.num}</span><h2 className="text-lg font-bold text-brand-onyx mt-1">{category.title}</h2><p className="text-sm text-brand-text-secondary mt-2">{category.desc}</p><span className="inline-flex items-center gap-1 text-xs font-bold text-brand-coral mt-5">Acessar documentação <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1" /></span></Link>)}</div></section><section className="py-14 bg-brand-surface-alt"><div className="max-w-[700px] mx-auto px-6 text-center"><Headphones className="w-10 h-10 text-brand-coral mx-auto mb-4" /><h2 className="text-2xl font-extrabold text-brand-onyx">Ainda precisa de ajuda?</h2><p className="text-sm text-brand-text-secondary mt-2">Fale com nossa equipe pelo canal mais conveniente.</p><Link to="/contato" className="inline-block mt-5 px-5 py-3 rounded-lg bg-brand-coral text-white text-xs font-bold uppercase">Abrir chamado</Link></div></section></main><Footer /></div>; }
+import { getArticlesByCategory } from "@/data/localData";
+
+export default function Help() {
+  return (
+    <PageShell titulo="Central de ajuda">
+      <PageHero eyebrow="Central de ajuda" titulo="Encontre respostas para sua operação" texto="Orientações práticas sobre coleta, transporte, rastreamento, faturamento e integrações." />
+      <Section>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {helpCategories.map((c) => {
+            const total = getArticlesByCategory(c.slug).length;
+            return (
+              <li key={c.slug}>
+                <Link to={`/ajuda/${c.slug}`} className="card rp-tap group flex h-full flex-col p-5 transition-colors hover:border-primary">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name={c.icon} size={26} /></span>
+                  <p className="mt-4 text-code-sm text-muted-foreground">{c.num}</p>
+                  <h2 className="text-headline-sm">{c.title}</h2>
+                  <p className="mt-2 flex-1 text-body-md text-muted-foreground">{c.desc}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-label-lg text-primary-deep">{total > 0 ? `${total} ${total === 1 ? "artigo" : "artigos"}` : "Em breve"}<Icon name="arrow_forward" size={18} className="transition-transform group-hover:translate-x-1" /></span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        <Card className="mt-10 text-center">
+          <Icon name="support_agent" size={40} className="text-primary-deep" />
+          <h2 className="text-headline-md mt-2">Ainda precisa de ajuda?</h2>
+          <p className="mt-2 text-body-md text-muted-foreground">Fale com a nossa equipe.</p>
+          <Button to="/contato" className="mt-4">Falar com a equipe</Button>
+        </Card>
+      </Section>
+    </PageShell>
+  );
+}

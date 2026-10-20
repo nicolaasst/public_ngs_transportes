@@ -1,7 +1,56 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, Menu, Phone, X } from "lucide-react";
-import Logo from "./Logo";
-import DiyeasButton from "@/components/ui/DiyeasButton";
-const links = [{ label: "Início", path: "/" }, { label: "Serviços", path: "/servicos", dropdown: true }, { label: "Rastreamento", path: "/rastreamento" }, { label: "Sobre Nós", path: "/sobre" }, { label: "Central de Ajuda", path: "/ajuda" }, { label: "Contato", path: "/contato" }];
-export default function Header() { const [open, setOpen] = useState(false); const location = useLocation(); return <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brand-border"><div className="max-w-[1440px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between"><Link to="/" aria-label="Ngs Transportes"><Logo /></Link><nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-brand-text-secondary">{links.map((link) => <Link key={link.path} to={link.path} className={`flex items-center gap-1 hover:text-brand-onyx ${location.pathname === link.path ? "text-brand-onyx font-semibold" : ""}`}>{link.label}{link.dropdown && <ChevronDown className="w-3 h-3" />}</Link>)}</nav><div className="flex items-center gap-3"><a href="tel:+551140028922" className="hidden xl:flex items-center gap-2 text-xs font-semibold text-brand-onyx bg-brand-surface-alt py-2 px-3.5 rounded-full"><Phone className="w-3.5 h-3.5 text-brand-coral" />(11) 4002-8922</a><Link to="/servicos#cotacao" className="hidden sm:block"><DiyeasButton size="sm">Solicitar Cotação</DiyeasButton></Link><button type="button" className="lg:hidden p-2 text-brand-onyx" onClick={() => setOpen(!open)} aria-label="Menu">{open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}</button></div></div>{open && <nav className="lg:hidden bg-white border-t border-brand-border px-6 py-4 space-y-2">{links.map((link) => <Link key={link.path} to={link.path} onClick={() => setOpen(false)} className="block py-2 text-sm text-brand-text-secondary">{link.label}</Link>)}<a href="tel:+551140028922" className="flex items-center gap-2 py-2 text-xs font-semibold"><Phone className="w-3.5 h-3.5 text-brand-coral" />(11) 4002-8922</a></nav>}</header>; }
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { Icon } from "@/components/rp/Icon";
+import { Logo } from "@/components/rp/Logo";
+import { Button } from "@/components/rp/Button";
+import { useTema } from "@/lib/tema";
+
+export const LINKS = [
+  { label: "Início", to: "/", fim: true },
+  { label: "Serviços", to: "/servicos" },
+  { label: "Rastreamento", to: "/rastreamento" },
+  { label: "Quem somos", to: "/sobre" },
+  { label: "Ajuda", to: "/ajuda" },
+  { label: "Contato", to: "/contato" },
+];
+
+export default function Header() {
+  const [aberto, setAberto] = useState(false);
+  const { dark, alternar } = useTema();
+  const { pathname } = useLocation();
+  useEffect(() => setAberto(false), [pathname]);
+
+  const item = ({ isActive }) =>
+    `rp-tap rounded-full px-3.5 py-2 text-label-lg transition-colors ${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`;
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+      <div className="page-container flex h-16 items-center justify-between gap-4 md:h-[72px]">
+        <Link to="/" aria-label="NGS Transportes — página inicial" className="rp-tap flex items-center gap-3">
+          <Logo variant="mark" size={40} />
+          <span className="text-headline-sm leading-none">NGS <span className="font-medium text-muted-foreground">Transportes</span></span>
+        </Link>
+        <nav aria-label="Principal" className="hidden items-center gap-1 lg:flex">
+          {LINKS.map((l) => <NavLink key={l.to} to={l.to} end={l.fim} className={item}>{l.label}</NavLink>)}
+        </nav>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={alternar} aria-label={dark ? "Usar tema claro" : "Usar tema escuro"} className="rp-tap flex h-11 w-11 items-center justify-center rounded-full bg-muted text-foreground">
+            <Icon name={dark ? "light_mode" : "dark_mode"} size={22} />
+          </button>
+          <Button to="/rastreamento" size="sm" className="hidden sm:inline-flex"><Icon name="travel_explore" size={18} />Rastrear</Button>
+          <button type="button" onClick={() => setAberto((v) => !v)} aria-expanded={aberto} aria-controls="menu-movel" aria-label={aberto ? "Fechar menu" : "Abrir menu"} className="rp-tap flex h-11 w-11 items-center justify-center rounded-full bg-muted lg:hidden">
+            <Icon name={aberto ? "close" : "menu"} size={24} />
+          </button>
+        </div>
+      </div>
+      {aberto && (
+        <nav id="menu-movel" aria-label="Menu móvel" className="border-t border-border bg-background lg:hidden">
+          <div className="page-container flex flex-col gap-1 py-3">
+            {LINKS.map((l) => <NavLink key={l.to} to={l.to} end={l.fim} className={({ isActive }) => `rp-tap flex min-h-[48px] items-center rounded-2xl px-4 text-body-lg ${isActive ? "bg-accent text-accent-foreground" : ""}`}>{l.label}</NavLink>)}
+            <Button to="/rastreamento" className="mt-2"><Icon name="travel_explore" size={20} />Rastrear encomenda</Button>
+          </div>
+        </nav>
+      )}
+    </header>
+  );
+}

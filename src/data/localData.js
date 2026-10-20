@@ -1,32 +1,9 @@
-export const testimonials = [
-  {
-    id: "testimonial-1",
-    quote: "A operação ganhou previsibilidade e o nosso time passou a acompanhar cada etapa da entrega em um único fluxo.",
-    client_name: "Mariana Costa",
-    client_role: "Head de Operações, Varejo Sul",
-    rating: 5,
-  },
-  {
-    id: "testimonial-2",
-    quote: "A combinação de cobertura nacional e atendimento próximo fez diferença para a expansão da nossa malha.",
-    client_name: "Rafael Mendes",
-    client_role: "Diretor de Supply Chain, Nova Casa",
-    rating: 5,
-  },
-  {
-    id: "testimonial-3",
-    quote: "Reduzimos retrabalho na expedição e passamos a tomar decisões com dados operacionais confiáveis.",
-    client_name: "Camila Nogueira",
-    client_role: "Gerente de Logística, Grupo Horizonte",
-    rating: 5,
-  },
-];
-
 export const faqs = [
-  { id: "faq-1", question: "Quais regiões a Ngs Transportes atende?", answer: "Atendemos operações em todo o território nacional, com soluções de carga fracionada, lotação e last mile." },
-  { id: "faq-2", question: "É possível acompanhar a entrega em tempo real?", answer: "Sim. A operação conta com rastreamento por evento, atualizações de status e comprovação digital de entrega." },
-  { id: "faq-3", question: "Como solicito uma cotação?", answer: "Preencha o formulário de cotação ou fale com nosso time comercial pelo e-mail comercial@ngstransportes.com.br." },
-  { id: "faq-4", question: "Vocês trabalham com cargas especiais?", answer: "Analisamos requisitos de acondicionamento, seguro, janela de entrega e restrições de rota para cada operação." },
+  { id: "faq-1", question: "Como consulto o rastreio da minha encomenda?", answer: "Informe o código de rastreio na página de rastreamento. A consulta é feita somente por esse código; número do pedido e NF-e não são aceitos." },
+  { id: "faq-2", question: "Onde encontro o código de rastreio?", answer: "O código é enviado pela NGS ou pela loja que despachou o pedido. Se não o recebeu, peça-o à loja ou fale com a nossa equipe." },
+  { id: "faq-3", question: "Como solicito uma cotação?", answer: "Preencha o formulário da página de contato com origem, destino e tipo de carga. Nossa equipe comercial retorna por e-mail." },
+  { id: "faq-4", question: "Quais regiões vocês atendem?", answer: "A cobertura depende da modalidade e do trecho. Informe origem e destino no pedido de cotação e confirmamos a disponibilidade." },
+  { id: "faq-5", question: "Como é feita a comprovação de entrega?", answer: "O motorista registra a entrega no aplicativo. Quando há comprovação, ela fica disponível no rastreio, pelo ícone da câmera." },
 ];
 
 export const jobs = [
