@@ -1,7 +1,7 @@
 // Cliente da API pública de rastreio: Edge Function `rastreio-publico` do projeto Supabase do NGS Tracker
 // (supabase/functions/rastreio-publico no repositório ngs_tracker_sup). O Tracker é a ÚNICA fonte dos dados:
 // este portal não tem banco, não guarda chaves e não tem alternativa/fallback para outra infraestrutura.
-// Consulta só pelo código de rastreio (sem 2º fator e sem mapa); o código vai no corpo do POST, nunca na URL.
+// Consulta só pelo código de rastreio (sem 2º fator e sem mapa); o código e o token do Turnstile vão no corpo do POST, nunca na URL.
 //
 // Resposta 200: { codigo, situacao, destino, previsao_entrega, eventos: [{ texto, em }] (mais recente primeiro),
 //                 em_rota, atualizado_em }
@@ -15,16 +15,16 @@ export function urlDaApi(env = import.meta.env) {
 
 /**
  * Consulta o rastreio. Devolve sempre um objeto com `estado`:
- *  ok | nao_encontrado | limite | indisponivel | rede | nao_configurado
+ *  ok | nao_encontrado | limite | verificacao | indisponivel | rede | nao_configurado
  */
-export async function consultarRastreio({ codigo }, { base = urlDaApi(), buscar = globalThis.fetch } = {}) {
+export async function consultarRastreio({ codigo, turnstileToken }, { base = urlDaApi(), buscar = globalThis.fetch } = {}) {
   if (!base) return { estado: "nao_configurado" };
   let resposta;
   try {
     resposta = await buscar(base, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo: String(codigo ?? "").trim() }),
+      body: JSON.stringify({ codigo: String(codigo ?? "").trim(), turnstile_token: String(turnstileToken ?? "") }),
       credentials: "omit",
       cache: "no-store",
     });
@@ -33,6 +33,7 @@ export async function consultarRastreio({ codigo }, { base = urlDaApi(), buscar 
   }
   if (resposta.status === 404) return { estado: "nao_encontrado" };
   if (resposta.status === 429) return { estado: "limite" };
+  if (resposta.status === 403) return { estado: "verificacao" };
   if (!resposta.ok) return { estado: "indisponivel" };
   try {
     return { estado: "ok", dados: await resposta.json() };

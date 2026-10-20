@@ -10,6 +10,7 @@ import { consultarRastreio, MENSAGEM_NAO_ENCONTRADO } from "@/lib/rastreio";
 const AVISOS = {
   nao_encontrado: MENSAGEM_NAO_ENCONTRADO,
   limite: "Muitas consultas seguidas. Aguarde alguns minutos e tente novamente.",
+  verificacao: "Não foi possível validar a verificação de segurança. Tente novamente.",
   indisponivel: "O rastreio está indisponível no momento. Tente novamente em instantes.",
   rede: "Não foi possível conectar. Verifique sua internet e tente novamente.",
   nao_configurado: "O rastreio online ainda não está habilitado neste ambiente. Fale com o nosso atendimento.",
@@ -21,6 +22,7 @@ export default function Tracking() {
   const [codigo, setCodigo] = useState(inicial.codigo ?? "");
   const [consulta, setConsulta] = useState(/** @type {{ estado: string, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
+  const turnstileRef = useRef(null);
   // última consulta feita (para "Atualizar" e para a atualização automática, sem reler o que o visitante digitou depois)
   const ultima = useRef(/** @type {{ codigo: string } | null} */ (null));
   const [atualizando, setAtualizando] = useState(false);
@@ -34,17 +36,29 @@ export default function Tracking() {
     return () => meta.remove();
   }, []);
 
-  const enviar = async (c = codigo) => {
+  // Cada consulta usa um token NOVO do Turnstile (o servidor recusa reaproveitado); `tokenPronto` é o que veio da home.
+  const consultarComToken = async (c, tokenPronto) => {
+    let turnstileToken = tokenPronto;
+    if (!turnstileToken) {
+      try { turnstileToken = await turnstileRef.current.obterToken(); } catch { return { estado: "verificacao" }; }
+    }
+    const r = await consultarRastreio({ codigo: c, turnstileToken });
+    // token vindo da home já usado/expirado (ex.: voltar no histórico): tenta uma vez com um token novo
+    if (r.estado === "verificacao" && tokenPronto) return consultarComToken(c, undefined);
+    return r;
+  };
+
+  const enviar = async (c = codigo, tokenPronto) => {
     ultima.current = { codigo: c };
     setConsulta({ estado: "carregando" });
-    setConsulta(await consultarRastreio({ codigo: c }));
+    setConsulta(await consultarComToken(c, tokenPronto));
   };
 
   // Atualiza o resultado já exibido sem piscar a tela; se a nova consulta falhar, mantém o último resultado bom.
   const atualizar = async () => {
     if (!ultima.current || atualizando) return;
     setAtualizando(true);
-    const nova = await consultarRastreio(ultima.current);
+    const nova = await consultarComToken(ultima.current.codigo);
     setAtualizando(false);
     if (nova.estado === "ok" || nova.estado === "nao_encontrado") setConsulta(nova);
   };
@@ -63,7 +77,7 @@ export default function Tracking() {
   useEffect(() => {
     if (jaConsultou.current || !inicial.codigo) return;
     jaConsultou.current = true;
-    enviar(inicial.codigo);
+    enviar(inicial.codigo, inicial.turnstileToken);
   }, []);
 
   const aviso = AVISOS[consulta.estado];
@@ -79,7 +93,7 @@ export default function Tracking() {
               <p className="text-white/60 mt-4">Informe o código de rastreio da sua remessa.</p>
             </div>
             <div className="mt-8 max-w-xl mx-auto bg-white text-brand-onyx rounded-card p-5">
-              <FormRastreio codigo={codigo} onCodigo={setCodigo} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
+              <FormRastreio codigo={codigo} onCodigo={setCodigo} turnstileRef={turnstileRef} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
             </div>
             <div className="max-w-xl mx-auto" aria-live="polite">
               {aviso && <p role="alert" className="mt-6 p-4 bg-white/10 border border-white/10 rounded-card text-sm">{aviso}</p>}

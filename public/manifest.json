@@ -1,0 +1,13 @@
+{
+  "name": "NGS Transportes",
+  "short_name": "NGS",
+  "description": "Logística terrestre, last mile e rastreamento de encomendas.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#0d0d0d",
+  "theme_color": "#ffc000",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
