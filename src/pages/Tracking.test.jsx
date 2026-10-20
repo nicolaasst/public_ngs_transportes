@@ -176,7 +176,7 @@ describe("ações do rastreio", () => {
     expect(screen.getByRole("button", { name: "Compartilhar rastreio" })).toBeInTheDocument(); // só o ícone
   });
 
-  it("câmera abre o modal com as informações; dele se baixa, compartilha e imprime", async () => {
+  it("câmera abre o modal com as informações; dele se baixa e compartilha (sem imprimir)", async () => {
     abrirMock.mockReturnValue(true); baixarMock.mockResolvedValue(); compartilharMock.mockResolvedValue("copiado");
     consultar.mockResolvedValue({ estado: "ok", dados: entregue() });
     const user = userEvent.setup();
@@ -191,8 +191,7 @@ describe("ações do rastreio", () => {
     await waitFor(() => expect(baixarMock).toHaveBeenCalled());
     await user.click(screen.getByRole("button", { name: /^compartilhar$/i }));
     expect(await screen.findByText(/Link do rastreio copiado/)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /imprimir/i }));
-    expect(abrirMock).toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: /imprimir/i })).toBeNull();
   });
 
   it("pedido em andamento: sem câmera, só o ícone de compartilhar no topo do card", async () => {

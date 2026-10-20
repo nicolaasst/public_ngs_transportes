@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Download, Printer, Share2 } from "lucide-react";
+import { Download, Share2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { abrirComprovante, baixarComprovante, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
+import { baixarComprovante, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
 
 const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
@@ -19,13 +19,12 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
 
   const baixar = async () => {
     setBaixando(true);
-    try { await baixarComprovante(dados); setAviso(""); } catch { setAviso("Não foi possível gerar o PDF agora. Use “Imprimir” e salve como PDF."); } finally { setBaixando(false); }
+    try { await baixarComprovante(dados); setAviso(""); } catch { setAviso("Não foi possível gerar o PDF agora. Tente novamente em instantes."); } finally { setBaixando(false); }
   };
   const compartilhar = async () => {
     const r = await compartilharRastreio(dados);
     setAviso({ copiado: "Link do rastreio copiado.", falhou: "Não foi possível compartilhar. Copie o endereço da página.", compartilhado: "", cancelado: "" }[r]);
   };
-  const imprimir = () => setAviso(abrirComprovante(dados) ? "" : "O navegador bloqueou a nova aba. Permita pop-ups para imprimir.");
 
   return (
     <Dialog open={aberto} onOpenChange={(v) => { if (!v) { setAviso(""); onFechar(); } }}>
@@ -63,9 +62,6 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
           </button>
           <button type="button" onClick={compartilhar} className={`${botao} border border-brand-border`}>
             <Share2 className="w-4 h-4" aria-hidden="true" />Compartilhar
-          </button>
-          <button type="button" onClick={imprimir} className={`${botao} border border-brand-border`}>
-            <Printer className="w-4 h-4" aria-hidden="true" />Imprimir
           </button>
         </div>
         {aviso && <p role="status" className="text-xs text-brand-text-secondary">{aviso}</p>}
