@@ -18,7 +18,9 @@ const AVISOS = {
 
 export default function Tracking() {
   const location = useLocation();
-  const inicial = location.state ?? {};
+  // `?codigo=` vem do link de "Compartilhar rastreio"; o state vem do formulário da home (com o token do Turnstile)
+  const codigoDoLink = new URLSearchParams(location.search).get("codigo")?.trim() || "";
+  const inicial = location.state ?? (codigoDoLink ? { codigo: codigoDoLink } : {});
   const [codigo, setCodigo] = useState(inicial.codigo ?? "");
   const [consulta, setConsulta] = useState(/** @type {{ estado: string, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
