@@ -25,7 +25,7 @@ const TurnstileWidget = forwardRef(function TurnstileWidget({ siteKey }, ref) {
         sitekey: siteKey,
         action: ACAO_TURNSTILE,
         appearance: "always",
-        theme: "auto",
+        theme: "light",
         language: "pt-br",
         callback: (t) => { token.current = t; resolverEsperas((w) => w.resolve(t)); },
         "expired-callback": () => { token.current = null; try { window.turnstile?.reset(widgetId.current); } catch { /* removido */ } },

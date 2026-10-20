@@ -24,7 +24,7 @@ export default function HelpArticle() {
   return (
     <PageShell titulo={article.title}>
       <PageHero voltar={{ to: `/ajuda/${categoria}`, rotulo: category.title }} eyebrow={category.title} titulo={article.title}>
-        <p className="mt-4 inline-flex items-center gap-1.5 text-body-md text-[hsl(240_3%_75%)]"><Icon name="schedule" size={18} />{article.read_time}</p>
+        <p className="mt-4 inline-flex items-center gap-1.5 text-body-md text-muted-foreground"><Icon name="schedule" size={18} />{article.read_time}</p>
       </PageHero>
       <Section>
         <article className="max-w-[720px] space-y-4 text-body-lg text-muted-foreground">

@@ -3,7 +3,6 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { Icon } from "@/components/rp/Icon";
 import { Logo } from "@/components/rp/Logo";
 import { Button } from "@/components/rp/Button";
-import { useTema } from "@/lib/tema";
 
 export const LINKS = [
   { label: "Início", to: "/", fim: true },
@@ -16,7 +15,6 @@ export const LINKS = [
 
 export default function Header() {
   const [aberto, setAberto] = useState(false);
-  const { dark, alternar } = useTema();
   const { pathname } = useLocation();
   useEffect(() => setAberto(false), [pathname]);
 
@@ -34,9 +32,6 @@ export default function Header() {
           {LINKS.map((l) => <NavLink key={l.to} to={l.to} end={l.fim} className={item}>{l.label}</NavLink>)}
         </nav>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={alternar} aria-label={dark ? "Usar tema claro" : "Usar tema escuro"} className="rp-tap flex h-11 w-11 items-center justify-center rounded-full bg-muted text-foreground">
-            <Icon name={dark ? "light_mode" : "dark_mode"} size={22} />
-          </button>
           <Button to="/rastreamento" size="sm" className="hidden sm:inline-flex"><Icon name="travel_explore" size={18} />Rastrear</Button>
           <button type="button" onClick={() => setAberto((v) => !v)} aria-expanded={aberto} aria-controls="menu-movel" aria-label={aberto ? "Fechar menu" : "Abrir menu"} className="rp-tap flex h-11 w-11 items-center justify-center rounded-full bg-muted lg:hidden">
             <Icon name={aberto ? "close" : "menu"} size={24} />
