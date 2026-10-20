@@ -23,17 +23,17 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="bg-navy text-[hsl(240_9%_94%)]">
+    <section className="bg-accent text-foreground">
       <div className="page-container grid items-center gap-10 py-12 md:py-16 lg:grid-cols-2 lg:gap-14">
         <div>
-          <p className="eyebrow !text-brand-yellow">Logística terrestre e last mile</p>
+          <p className="eyebrow">Logística terrestre e last mile</p>
           <h1 className="text-display-lg mt-3 md:!text-[48px] md:!leading-[56px]">
-            Aproximando o seu negócio <span className="text-brand-yellow">dos seus clientes</span>, entrega por entrega.
+            Aproximando o seu negócio <span className="rounded-lg bg-primary px-1.5">dos seus clientes</span>, entrega por entrega.
           </h1>
-          <p className="mt-4 max-w-lg text-body-lg text-[hsl(240_3%_75%)]">Entregas last mile, fulfillment e transporte rodoviário, com rastreamento por evento e comprovação digital de entrega.</p>
+          <p className="mt-4 max-w-lg text-body-lg text-muted-foreground">Entregas last mile, fulfillment e transporte rodoviário, com rastreamento por evento e comprovação digital de entrega.</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button to="/contato"><Icon name="request_quote" size={20} />Solicitar cotação</Button>
-            <Button to="/servicos" variant="outline" className="!border-white/30 !text-white">Conhecer serviços</Button>
+            <Button to="/servicos" variant="outline">Conhecer serviços</Button>
           </div>
           <img src={BRAND.container} alt="Contêiner NGS Transportes sendo içado, cercado por caixas com paraquedas" width="768" height="259" className="mt-10 w-full max-w-lg" />
         </div>

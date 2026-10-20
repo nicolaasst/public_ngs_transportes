@@ -14,6 +14,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Surfaces — NGS Driver (vivid yellow + ink) */
     --background: 240 10% 97%;             /* #F7F7F9 */
     --foreground: 0 0% 0%;                /* ink #000000 */
@@ -126,63 +127,6 @@
     --sidebar-ring: 49 100% 53%;
   }
 
-  .dark {
-    --background: 229 30% 9%;             /* navy */
-    --foreground: 240 9% 94%;
-    --card: 258 16% 12%;
-    --card-foreground: 240 9% 94%;
-    --popover: 258 16% 12%;
-    --popover-foreground: 240 9% 94%;
-    --primary: 50 100% 53%;              /* brand-yellow CTA on dark */
-    --primary-foreground: 0 0% 0%;        /* ink on yellow */
-    --primary-deep: 50 100% 53%;          /* yellow accent text on dark */
-    --primary-container: 50 100% 53%;
-    --on-primary-container: 0 0% 0%;      /* ink on yellow */
-    --primary-pressed: 50 88% 47%;
-    --secondary: 240 9% 20%;
-    --secondary-foreground: 240 9% 94%;
-    --secondary-container: 258 16% 16%;
-    --tertiary: 240 9% 94%;
-    --tertiary-foreground: 258 16% 9%;
-    --tertiary-container: 48 60% 30%;
-    --accent: 48 60% 30%;
-    --accent-foreground: 48 100% 81%;
-    --muted: 258 16% 16%;
-    --muted-foreground: 240 3% 65%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --destructive-pressed: 0 70% 35%;
-    --border: 258 16% 18%;
-    --input: 258 16% 22%;
-    --status-green-bg: 141 40% 14%;
-    --status-green-fg: 141 60% 52%;
-    --status-amber-bg: 38 50% 15%;
-    --status-amber-fg: 38 92% 58%;
-    --status-red-bg: 0 45% 17%;
-    --status-red-fg: 0 84% 68%;
-    --status-blue-bg: 222 45% 19%;
-    --status-blue-fg: 217 91% 70%;
-    --status-gray-bg: 258 12% 18%;
-    --status-gray-fg: 240 6% 72%;
-    --error-container: 0 45% 17%;
-    --on-error-container: 0 84% 74%;
-    --status-success: 141 60% 52%;
-    --status-danger: 0 84% 66%;
-    --status-info: 217 91% 68%;
-    --status-warning: 38 92% 58%;
-    --ring: 49 100% 53%;
-    --chart-1: 49 100% 53%;
-    --chart-2: 240 9% 94%;
-    --chart-3: 50 88% 47%;
-    --chart-4: 48 100% 81%;
-    --chart-5: 0 72% 51%;
-    --sidebar-background: 258 16% 12%;
-    --sidebar-foreground: 240 9% 94%;
-    --sidebar-primary: 49 100% 53%;
-    --sidebar-accent: 48 60% 30%;
-    --sidebar-accent-foreground: 48 100% 81%;
-    --sidebar-border: 258 16% 18%;
-  }
 }
 
 @layer base {

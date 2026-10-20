@@ -60,12 +60,12 @@ export default function Services() {
         </div>
       </Section>
       <Section eyebrow="Dúvidas frequentes" titulo="Sobre as entregas"><div className="max-w-3xl"><Disclosure itens={perguntas} /></div></Section>
-      <section id="cotacao" className="section-y bg-navy scroll-mt-20">
+      <section id="cotacao" className="section-y bg-accent scroll-mt-20">
         <div className="page-container grid items-center gap-8 md:grid-cols-2">
-          <div className="text-[hsl(240_9%_94%)]">
+          <div>
             <img src={MASCOTES.trianglePointing} alt="" aria-hidden="true" className="mb-4 h-24 w-24 object-contain" />
             <h2 className="text-headline-lg">Vamos montar a melhor rota para você</h2>
-            <p className="mt-3 text-body-lg text-[hsl(240_3%_75%)]">Envie os dados da operação e a equipe comercial retorna por e-mail.</p>
+            <p className="mt-3 text-body-lg text-muted-foreground">Envie os dados da operação e a equipe comercial retorna por e-mail.</p>
           </div>
           <QuoteForm />
         </div>
