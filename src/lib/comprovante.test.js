@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 const pdfFalso = { addImage: vi.fn(), addPage: vi.fn(), text: vi.fn(), save: vi.fn(), setFont: vi.fn(), setFontSize: vi.fn(), splitTextToSize: (t) => [String(t)] };
 vi.mock("jspdf", () => ({ jsPDF: function () { return pdfFalso; } }));
-import { abrirComprovante, baixarComprovante, compartilharRastreio, esc, htmlComprovante, nomeArquivo, temComprovante, urlDeCompartilhamento, urlSegura } from "@/lib/comprovante";
+import { abrirComprovante, baixarComprovante, fotosDoComprovante, compartilharRastreio, esc, htmlComprovante, nomeArquivo, temComprovante, urlDeCompartilhamento, urlSegura } from "@/lib/comprovante";
 
 const dados = {
   codigo: "NGSSP123456789BR", situacao: "Entregue em 17/10/2026", destino: "São Paulo/SP",
@@ -101,5 +101,25 @@ describe("baixarComprovante (PDF)", () => {
     const carregar = vi.fn(async () => ({ dataUrl: "data:image/jpeg;base64,AAAA", w: 100, h: 100 }));
     await baixarComprovante(um(["http://x/a.jpg", "javascript:1", ...Array.from({ length: 6 }, (_, i) => `https://r2.exemplo/${i}.jpg`)]), { carregar });
     expect(carregar).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe("fotos do servidor (data URL)", () => {
+  const c = { arquivos: ["https://r2.exemplo/a.jpg", "https://r2.exemplo/b.jpg", "http://x/c.jpg"], imagens: ["data:image/jpeg;base64,AAAA", null, "data:image/jpeg;base64,BBBB"] };
+  it("casa cada URL com a imagem embutida, ignora data URL que não é imagem e URL não https", () => {
+    expect(fotosDoComprovante(c)).toEqual([{ url: "https://r2.exemplo/a.jpg", inline: "data:image/jpeg;base64,AAAA" }, { url: "https://r2.exemplo/b.jpg", inline: null }]);
+    expect(fotosDoComprovante({ arquivos: ["https://r2.exemplo/a.jpg"], imagens: ["data:text/html;base64,PHNjcmlwdD4="] })[0].inline).toBeNull();
+    expect(fotosDoComprovante(null)).toEqual([]);
+  });
+  it("o PDF recebe a imagem do servidor em vez de depender de CORS", async () => {
+    Object.values(pdfFalso).forEach((f) => f.mockClear?.());
+    const carregar = vi.fn(async (_url, inline) => (inline ? { dataUrl: inline, w: 200, h: 100 } : null));
+    await baixarComprovante({ ...dados, comprovante: { ...dados.comprovante, arquivos: ["https://r2.exemplo/a.jpg"], imagens: ["data:image/jpeg;base64,AAAA"] } }, { carregar });
+    expect(carregar).toHaveBeenCalledWith("https://r2.exemplo/a.jpg", "data:image/jpeg;base64,AAAA");
+    expect(pdfFalso.addImage).toHaveBeenCalledTimes(1);
+  });
+  it("o HTML do comprovante usa a imagem embutida", () => {
+    const h = htmlComprovante({ ...dados, comprovante: { ...dados.comprovante, arquivos: ["https://r2.exemplo/a.jpg"], imagens: ["data:image/jpeg;base64,AAAA"] } });
+    expect(h).toContain('src="data:image/jpeg;base64,AAAA"');
   });
 });
