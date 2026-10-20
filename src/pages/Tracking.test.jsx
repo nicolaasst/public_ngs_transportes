@@ -105,7 +105,7 @@ describe("página de rastreio", () => {
     const user = userEvent.setup();
     abrir();
     await preencher(user);
-    await screen.findByText("Saiu para entrega", { selector: "p" });
+    expect((await screen.findAllByText("Saiu para entrega", { selector: "p" })).length).toBeGreaterThan(0);
     await user.clear(screen.getByLabelText("Código de rastreio")); // o que o visitante digitar depois não vale para "Atualizar"
     await user.click(screen.getByRole("button", { name: /^atualizar$/i }));
     expect(await screen.findByText("Entregue em 17/10/2026")).toBeInTheDocument();
@@ -219,5 +219,26 @@ describe("ações do rastreio", () => {
     consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false }) });
     render(<MemoryRouter initialEntries={["/rastreamento?codigo=NX-9999"]}><Tracking /></MemoryRouter>);
     await waitFor(() => expect(consultar).toHaveBeenCalledWith({ codigo: "NX-9999", turnstileToken: "tok-1" }));
+  });
+});
+
+describe("linha do tempo", () => {
+  it("cada evento tem um ícone em pílula e só o mais recente é o atual (pisca)", async () => {
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, eventos: [
+      { em: "2026-10-17T10:00:00Z", texto: "Saiu para entrega" }, { em: "2026-10-16T10:00:00Z", texto: "Em trânsito" }, { em: "2026-10-15T10:00:00Z", texto: "Pedido registrado" },
+    ] }) });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    const atual = await screen.findByTestId("evento-atual");
+    expect(atual).toHaveTextContent("Saiu para entrega");
+    expect(atual.querySelector(".animate-ping")).not.toBeNull();
+    expect(atual.querySelector(".animate-pulse")).not.toBeNull();
+    expect(atual).toHaveAttribute("aria-current", "step");
+    const outros = screen.getAllByTestId("evento");
+    expect(outros).toHaveLength(2);
+    outros.forEach((o) => { expect(o.querySelector(".animate-ping")).toBeNull(); expect(o.querySelector("svg")).not.toBeNull(); });
+    // respeita "reduzir movimento"
+    expect(atual.querySelector(".motion-reduce\\:animate-none")).not.toBeNull();
   });
 });
