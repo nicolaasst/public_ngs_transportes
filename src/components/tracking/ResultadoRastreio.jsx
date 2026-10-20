@@ -13,14 +13,18 @@ const hora = (iso) => {
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 };
 
+// `embutido` = dentro de um cartão recolhível (lista de pedidos): sem moldura própria
+const Embutido = ({ as: Tag = "div", className = "", children, ...p }) => <Tag className={className} {...p}>{children}</Tag>;
+
 const PILULA = { sucesso: "green", andamento: "blue", alerta: "amber", erro: "red", neutro: "gray" };
 const botaoIcone = "rp-tap flex h-11 w-11 items-center justify-center rounded-full bg-muted text-foreground";
 
-export default function ResultadoRastreio({ dados, onAtualizar, atualizando = false }) {
+export default function ResultadoRastreio({ dados, onAtualizar, atualizando = false, embutido = false }) {
   const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
   const [aviso, setAviso] = useState("");
   const [comprovanteAberto, setComprovanteAberto] = useState(false);
   const entregue = temComprovante(dados);
+  const Wrapper = embutido ? Embutido : Card;
   const tom = PILULA[classificarEvento(dados.situacao).tom] || "gray";
 
   const compartilhar = async () => {
@@ -28,19 +32,21 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
     setAviso({ copiado: "Link do rastreio copiado.", falhou: "Não foi possível compartilhar. Copie o endereço da página.", compartilhado: "", cancelado: "" }[r]);
   };
   return (
-    <Card as="section" aria-label="Resultado do rastreio" className="mt-6 !p-5 text-left md:!p-6">
+    <Wrapper as="section" aria-label="Resultado do rastreio" className={embutido ? "p-5 pt-0 text-left md:px-6 md:pb-6" : "mt-6 !p-5 text-left md:!p-6"}>
       <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <StatusPill status={tom}>{dados.situacao}</StatusPill>
-          <p className="mt-3 flex items-baseline gap-2 text-label-md text-muted-foreground">
-            Pedido{codigoSecundario(dados) && <MonoText size="sm" className="!font-normal opacity-70">{codigoSecundario(dados)}</MonoText>}
-          </p>
-          <MonoText size="lg">{codigoNgs(dados)}</MonoText>
-          <p className="mt-2 text-body-md text-muted-foreground">
-            Destino: <span className="text-foreground">{dados.destino}</span>
-            {dados.previsao_entrega ? <> · Previsão: <span className="text-foreground">{dados.previsao_entrega}</span></> : null}
-          </p>
-        </div>
+        {embutido ? <div className="flex-1" /> : (
+          <div className="min-w-0 flex-1">
+            <StatusPill status={tom}>{dados.situacao}</StatusPill>
+            <p className="mt-3 flex items-baseline gap-2 text-label-md text-muted-foreground">
+              Pedido{codigoSecundario(dados) && <MonoText size="sm" className="!font-normal opacity-70">{codigoSecundario(dados)}</MonoText>}
+            </p>
+            <MonoText size="lg">{codigoNgs(dados)}</MonoText>
+            <p className="mt-2 text-body-md text-muted-foreground">
+              Destino: <span className="text-foreground">{dados.destino}</span>
+              {dados.previsao_entrega ? <> · Previsão: <span className="text-foreground">{dados.previsao_entrega}</span></> : null}
+            </p>
+          </div>
+        )}
         <div className="flex shrink-0 items-center gap-2">
           {entregue && (
             <button type="button" onClick={() => setComprovanteAberto(true)} className={botaoIcone} aria-label="Abrir comprovante de entrega" title="Comprovante de entrega">
@@ -70,6 +76,6 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
           </button>
         )}
       </div>
-    </Card>
+    </Wrapper>
   );
 }

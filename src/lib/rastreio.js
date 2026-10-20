@@ -3,6 +3,7 @@
 // este portal não tem banco, não guarda chaves e não tem alternativa/fallback para outra infraestrutura.
 // Consulta só pelo código de rastreio (sem 2º fator e sem mapa); o código e o token do Turnstile vão no corpo do POST, nunca na URL.
 //
+// Também aceita `codigos` (vários códigos) e `documento` (CPF/CNPJ): resposta { pedidos: [...], nao_encontrados?, truncado? }.
 // Resposta 200: { codigo, situacao, destino, previsao_entrega, eventos: [{ texto, em }] (mais recente primeiro),
 //                 em_rota, atualizado_em }
 
@@ -17,14 +18,17 @@ export function urlDaApi(env = import.meta.env) {
  * Consulta o rastreio. Devolve sempre um objeto com `estado`:
  *  ok | nao_encontrado | limite | verificacao | indisponivel | rede | nao_configurado
  */
-export async function consultarRastreio({ codigo, turnstileToken }, { base = urlDaApi(), buscar = globalThis.fetch } = {}) {
+export async function consultarRastreio({ codigo, codigos, documento, turnstileToken }, { base = urlDaApi(), buscar = globalThis.fetch } = {}) {
   if (!base) return { estado: "nao_configurado" };
+  const consulta = documento ? { documento: String(documento).trim() }
+    : Array.isArray(codigos) && codigos.length > 1 ? { codigos: codigos.map((c) => String(c).trim()) }
+    : { codigo: String(Array.isArray(codigos) ? codigos[0] : codigo ?? "").trim() };
   let resposta;
   try {
     resposta = await buscar(base, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo: String(codigo ?? "").trim(), turnstile_token: String(turnstileToken ?? "") }),
+      body: JSON.stringify({ ...consulta, turnstile_token: String(turnstileToken ?? "") }),
       credentials: "omit",
       cache: "no-store",
     });
@@ -36,7 +40,9 @@ export async function consultarRastreio({ codigo, turnstileToken }, { base = url
   if (resposta.status === 403) return { estado: "verificacao" };
   if (!resposta.ok) return { estado: "indisponivel" };
   try {
-    return { estado: "ok", dados: await resposta.json() };
+    const json = await resposta.json();
+    if (Array.isArray(json?.pedidos)) return { estado: "ok", pedidos: json.pedidos, naoEncontrados: json.nao_encontrados ?? [], truncado: json.truncado === true };
+    return { estado: "ok", dados: json, pedidos: [json], naoEncontrados: [], truncado: false };
   } catch {
     return { estado: "indisponivel" };
   }
