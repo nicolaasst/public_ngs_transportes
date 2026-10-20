@@ -1,6 +1,54 @@
 import { useRef, useState } from "react";
-import { ArrowRight, PackageOpen } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FormRastreio from "@/components/tracking/FormRastreio";
-import DiyeasButton from "@/components/ui/DiyeasButton";
-export default function HeroSection() { const [code, setCode] = useState(""); const [erro, setErro] = useState(""); const turnstileRef = useRef(null); const navigate = useNavigate(); return <section className="relative pt-10 pb-20 overflow-hidden hero-radial-bg"><div className="max-w-[1440px] mx-auto px-6 lg:px-12"><div className="grid lg:grid-cols-2 gap-8 items-center mb-10"><div><span className="inline-block text-xs font-bold tracking-widest text-brand-coral uppercase mb-3 font-ibmmono">// Malha rodoviária & distribuição urbana</span><h1 className="text-4xl md:text-5xl xl:text-6xl font-extrabold text-brand-onyx tracking-tight leading-[1.12]">Aproximando o seu negócio <span className="text-brand-coral">dos seus clientes</span>, entrega por entrega.</h1></div><div className="space-y-4"><p className="text-brand-text-secondary text-sm md:text-base leading-relaxed">Especialistas em last mile, fulfillment para e-commerce e transporte rodoviário em todo o território nacional.</p><Link to="/servicos#cotacao"><DiyeasButton size="lg" iconRight={ArrowRight}>Solicitar Cotação</DiyeasButton></Link></div></div><div className="relative rounded-card overflow-hidden shadow-2xl bg-brand-onyx min-h-[400px]"><img alt="Frota de entrega" className="absolute inset-0 w-full h-full object-cover opacity-70" src="https://images.unsplash.com/photo-1601584119197-04ecc0da31d7?w=1600&q=80" /><div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" /><div className="relative z-10 p-6 md:p-10 flex items-end min-h-[400px]"><div className="w-full max-w-md bg-white rounded-card p-6 shadow-xl"><div className="flex items-center gap-3 mb-4"><div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center"><PackageOpen className="w-4 h-4 text-brand-coral" /></div><div><h2 className="text-sm font-bold text-brand-onyx">Rastrear encomenda</h2><p className="text-[11px] text-brand-text-secondary">Informe o código de rastreio</p></div></div><FormRastreio compacto codigo={code} onCodigo={setCode} turnstileRef={turnstileRef} onEnviar={async () => { setErro(""); try { const turnstileToken = await turnstileRef.current.obterToken(); navigate("/rastreamento", { state: { codigo: code.trim(), turnstileToken } }); } catch { setErro("Não foi possível validar a verificação de segurança. Tente novamente."); } }} />{erro && <p role="alert" className="mt-2 text-xs text-red-600">{erro}</p>}</div></div></div></div></section>; }
+import { Button } from "@/components/rp/Button";
+import { Card } from "@/components/rp/Card";
+import { Icon } from "@/components/rp/Icon";
+import { BRAND } from "@/lib/brandAssets";
+
+export default function HeroSection() {
+  const [code, setCode] = useState("");
+  const [erro, setErro] = useState("");
+  const turnstileRef = useRef(null);
+  const navigate = useNavigate();
+
+  const enviar = async () => {
+    setErro("");
+    try {
+      const turnstileToken = await turnstileRef.current.obterToken();
+      navigate("/rastreamento", { state: { codigo: code.trim(), turnstileToken } });
+    } catch {
+      setErro("Não foi possível validar a verificação de segurança. Tente novamente.");
+    }
+  };
+
+  return (
+    <section className="bg-navy text-[hsl(240_9%_94%)]">
+      <div className="page-container grid items-center gap-10 py-12 md:py-16 lg:grid-cols-2 lg:gap-14">
+        <div>
+          <p className="eyebrow !text-brand-yellow">Logística terrestre e last mile</p>
+          <h1 className="text-display-lg mt-3 md:!text-[48px] md:!leading-[56px]">
+            Aproximando o seu negócio <span className="text-brand-yellow">dos seus clientes</span>, entrega por entrega.
+          </h1>
+          <p className="mt-4 max-w-lg text-body-lg text-[hsl(240_3%_75%)]">Entregas last mile, fulfillment e transporte rodoviário, com rastreamento por evento e comprovação digital de entrega.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button to="/contato"><Icon name="request_quote" size={20} />Solicitar cotação</Button>
+            <Button to="/servicos" variant="outline" className="!border-white/30 !text-white">Conhecer serviços</Button>
+          </div>
+          <img src={BRAND.container} alt="Contêiner NGS Transportes sendo içado, cercado por caixas com paraquedas" width="768" height="259" className="mt-10 w-full max-w-lg" />
+        </div>
+        <Card className="!p-5 md:!p-7 text-card-foreground">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name="package_2" size={26} filled /></span>
+            <div>
+              <h2 className="text-headline-sm">Rastrear encomenda</h2>
+              <p className="text-body-sm text-muted-foreground">Informe o código de rastreio</p>
+            </div>
+          </div>
+          <FormRastreio codigo={code} onCodigo={setCode} turnstileRef={turnstileRef} onEnviar={enviar} />
+          {erro && <p role="alert" className="mt-3 text-body-sm text-destructive">{erro}</p>}
+        </Card>
+      </div>
+    </section>
+  );
+}

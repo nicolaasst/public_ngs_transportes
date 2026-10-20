@@ -1,20 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MapPin, Navigation, FileText } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
 import FormRastreio from "@/components/tracking/FormRastreio";
 import ResultadoRastreio from "@/components/tracking/ResultadoRastreio";
 import { consultarRastreio, MENSAGEM_NAO_ENCONTRADO } from "@/lib/rastreio";
+import { Card } from "@/components/rp/Card";
+import { Icon } from "@/components/rp/Icon";
+import { StatusPill } from "@/components/rp/StatusPill";
+import { EmptyState } from "@/components/rp/EmptyState";
+import { MASCOTES } from "@/lib/brandAssets";
 
 const AVISOS = {
-  nao_encontrado: MENSAGEM_NAO_ENCONTRADO,
   limite: "Muitas consultas seguidas. Aguarde alguns minutos e tente novamente.",
   verificacao: "Não foi possível validar a verificação de segurança. Tente novamente.",
   indisponivel: "O rastreio está indisponível no momento. Tente novamente em instantes.",
   rede: "Não foi possível conectar. Verifique sua internet e tente novamente.",
   nao_configurado: "O rastreio online ainda não está habilitado neste ambiente. Fale com o nosso atendimento.",
 };
+
+const ETAPAS = [
+  { status: "gray", rotulo: "Registrado", texto: "O pedido foi recebido e cadastrado pela NGS." },
+  { status: "blue", rotulo: "Em movimento", texto: "Separação, coleta, trânsito ou saída para entrega." },
+  { status: "amber", rotulo: "Atenção", texto: "Tentativa sem sucesso, retirada pendente ou devolução. O motivo aparece na linha do tempo." },
+  { status: "green", rotulo: "Entregue", texto: "Entrega concluída. Quando há comprovação, o ícone da câmera abre o comprovante." },
+  { status: "red", rotulo: "Cancelado", texto: "O pedido foi cancelado pela origem." },
+];
 
 export default function Tracking() {
   const location = useLocation();
@@ -84,42 +95,44 @@ export default function Tracking() {
 
   const aviso = AVISOS[consulta.estado];
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <main className="pt-20">
-        <section className="py-20 bg-brand-onyx text-white">
-          <div className="max-w-[900px] mx-auto px-6">
-            <div className="text-center">
-              <span className="font-ibmmono text-xs text-brand-coral uppercase font-semibold">// Visibilidade operacional</span>
-              <h1 className="text-3xl md:text-5xl font-extrabold mt-2">Rastreie sua remessa</h1>
-              <p className="text-white/60 mt-4">Informe o código de rastreio da sua remessa.</p>
-            </div>
-            <div className="mt-8 max-w-xl mx-auto bg-white text-brand-onyx rounded-card p-5">
-              <FormRastreio codigo={codigo} onCodigo={setCodigo} turnstileRef={turnstileRef} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
-            </div>
-            <div className="max-w-xl mx-auto" aria-live="polite">
-              {aviso && <p role="alert" className="mt-6 p-4 bg-white/10 border border-white/10 rounded-card text-sm">{aviso}</p>}
-              {consulta.estado === "ok" && <ResultadoRastreio dados={consulta.dados} onAtualizar={atualizar} atualizando={atualizando} />}
-            </div>
+    <PageShell titulo="Rastreamento">
+      <PageHero eyebrow="Rastreamento" titulo="Rastreie sua encomenda" texto="Informe o código de rastreio recebido da NGS ou da loja que enviou o seu pedido." />
+      <section className="section-y !pt-8 md:!pt-10">
+        <div className="page-container max-w-[640px]">
+          <Card className="!p-5 md:!p-6">
+            <FormRastreio codigo={codigo} onCodigo={setCodigo} turnstileRef={turnstileRef} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
+            <p className="mt-4 flex gap-2 text-body-sm text-muted-foreground">
+              <Icon name="info" size={18} className="shrink-0" />
+              <span>A consulta é feita somente pelo <strong className="text-foreground">código de rastreio</strong>. Número do pedido, NF-e e CPF/CNPJ não são aceitos.</span>
+            </p>
+          </Card>
+
+          <div aria-live="polite">
+            {consulta.estado === "nao_encontrado" && (
+              <div role="alert" className="mt-6"><EmptyState illustration={MASCOTES.circleThinking} title="Código não encontrado" subtitle={MENSAGEM_NAO_ENCONTRADO} /></div>
+            )}
+            {aviso && (
+              <p role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container">
+                <Icon name="report_problem" size={22} className="shrink-0" />{aviso}
+              </p>
+            )}
+            {consulta.estado === "ok" && <ResultadoRastreio dados={consulta.dados} onAtualizar={atualizar} atualizando={atualizando} />}
           </div>
-        </section>
-        <section className="py-16">
-          <div className="max-w-[1100px] mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-brand-onyx text-center mb-10">Acompanhe cada etapa da sua operação</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[{ icon: Navigation, title: "Atualizações de rota", desc: "Informações claras para acompanhar o deslocamento da carga." }, { icon: FileText, title: "Documentação digital", desc: "Dados operacionais organizados para reduzir retrabalho." }, { icon: MapPin, title: "Cobertura nacional", desc: "Suporte para rotas urbanas, regionais e interestaduais." }].map((item) => (
-                <div key={item.title} className="p-6 rounded-card bg-brand-surface-alt border border-brand-border">
-                  <item.icon className="w-7 h-7 text-brand-coral mb-4" aria-hidden="true" />
-                  <h3 className="font-bold text-brand-onyx">{item.title}</h3>
-                  <p className="text-sm text-brand-text-secondary mt-2">{item.desc}</p>
-                </div>
+
+          <section aria-labelledby="entenda" className="mt-12">
+            <h2 id="entenda" className="text-headline-md">Entenda os status</h2>
+            <ul className="mt-4 space-y-3">
+              {ETAPAS.map((e) => (
+                <li key={e.rotulo} className="card flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:gap-4">
+                  <StatusPill status={e.status} className="self-start whitespace-nowrap sm:w-40 sm:justify-center">{e.rotulo}</StatusPill>
+                  <p className="text-body-md text-muted-foreground">{e.texto}</p>
+                </li>
               ))}
-            </div>
-            <p className="text-center text-sm text-brand-text-secondary mt-10">Precisa de ajuda? <Link to="/contato" className="text-brand-coral font-semibold">Fale com a nossa equipe.</Link></p>
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+            </ul>
+            <p className="mt-8 text-center text-body-md text-muted-foreground">Não encontrou o seu pedido? <Link to="/contato" className="text-label-lg text-primary-deep underline underline-offset-4">Fale com a nossa equipe</Link>.</p>
+          </section>
+        </div>
+      </section>
+    </PageShell>
   );
 }

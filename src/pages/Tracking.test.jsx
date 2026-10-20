@@ -236,7 +236,7 @@ describe("linha do tempo", () => {
     expect(atual).toHaveAttribute("aria-current", "step");
     const outros = screen.getAllByTestId("evento");
     expect(outros).toHaveLength(2);
-    outros.forEach((o) => { expect(o.querySelector(".animate-ping")).toBeNull(); expect(o.querySelector("svg")).not.toBeNull(); });
+    outros.forEach((o) => { expect(o.querySelector(".animate-ping")).toBeNull(); expect(o.querySelector(".material-symbols-outlined")).not.toBeNull(); });
     // respeita "reduzir movimento"
     expect(atual.querySelector(".motion-reduce\\:animate-none")).not.toBeNull();
   });

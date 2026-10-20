@@ -1,5 +1,41 @@
 import { Link } from "react-router-dom";
-import { Globe, MessageCircle, Play, Share2 } from "lucide-react";
-import Logo from "./Logo";
-const columns = [{ title: "Serviços", links: [["Entregas Last Mile", "/servicos"], ["Cross-Docking", "/servicos"], ["Fulfillment", "/servicos"]] }, { title: "Links rápidos", links: [["Rastreamento", "/rastreamento"], ["Solicitar cotação", "/contato"], ["Central de Ajuda", "/ajuda"]] }, { title: "Institucional", links: [["Quem Somos", "/sobre"], ["Carreiras", "/carreiras"], ["Blog", "/blog"]] }];
-export default function Footer() { return <footer className="bg-brand-onyx text-white pt-16 pb-10"><div className="max-w-[1440px] mx-auto px-6 lg:px-12"><div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10"><div><Logo light /><p className="text-neutral-400 text-xs leading-relaxed mt-4">Soluções completas em logística terrestre, entregas last mile e distribuição rodoviária no Brasil.</p></div>{columns.map((column) => <div key={column.title}><h3 className="text-sm font-bold uppercase tracking-wider mb-4">{column.title}</h3><ul className="space-y-2 text-xs text-neutral-400">{column.links.map(([label, path]) => <li key={label}><Link to={path} className="hover:text-brand-coral">{label}</Link></li>)}</ul></div>)}</div><div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-500"><span>© 2026 Ngs Transportes. Todos os direitos reservados.</span><div className="flex items-center gap-5"><Link to="/privacidade" className="hover:text-white">Privacidade</Link><Link to="/termos" className="hover:text-white">Termos</Link><a href="mailto:contato@ngstransportes.com.br" className="hover:text-white">Contato</a><div className="flex gap-3"><a href="#" aria-label="LinkedIn"><Share2 className="w-4 h-4" /></a><a href="#" aria-label="Instagram"><Globe className="w-4 h-4" /></a><a href="#" aria-label="YouTube"><Play className="w-4 h-4" /></a><a href="#" aria-label="WhatsApp"><MessageCircle className="w-4 h-4" /></a></div></div></div></div></footer>; }
+import { Logo } from "@/components/rp/Logo";
+import { Icon } from "@/components/rp/Icon";
+
+const colunas = [
+  { titulo: "Serviços", links: [["Entregas last mile", "/servicos"], ["Rastreamento", "/rastreamento"], ["Solicitar cotação", "/contato"]] },
+  { titulo: "Empresa", links: [["Quem somos", "/sobre"], ["Carreiras", "/carreiras"], ["Blog", "/blog"]] },
+  { titulo: "Ajuda e legal", links: [["Central de ajuda", "/ajuda"], ["Privacidade", "/privacidade"], ["Termos", "/termos"]] },
+];
+
+export default function Footer() {
+  return (
+    <footer className="bg-navy text-[hsl(240_9%_94%)]">
+      <div className="page-container py-14">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+          <div>
+            <div className="flex items-center gap-3">
+              <Logo variant="mark" size={44} />
+              <span className="text-headline-sm">NGS Transportes</span>
+            </div>
+            <p className="mt-4 max-w-xs text-body-md text-[hsl(240_3%_65%)]">Logística terrestre, entregas last mile e distribuição rodoviária.</p>
+            <a href="mailto:comercial@ngstransportes.com.br" className="rp-tap mt-5 inline-flex min-h-[44px] items-center gap-2 text-label-lg text-brand-yellow">
+              <Icon name="mail" size={20} />comercial@ngstransportes.com.br
+            </a>
+          </div>
+          {colunas.map((c) => (
+            <nav key={c.titulo} aria-label={c.titulo}>
+              <h2 className="text-label-sm uppercase text-[hsl(240_3%_65%)]">{c.titulo}</h2>
+              <ul className="mt-3 space-y-1">
+                {c.links.map(([rotulo, to]) => (
+                  <li key={rotulo}><Link to={to} className="rp-tap inline-flex min-h-[40px] items-center text-body-md hover:text-brand-yellow">{rotulo}</Link></li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+        <p className="mt-12 border-t border-white/10 pt-6 text-body-sm text-[hsl(240_3%_65%)]">© {new Date().getFullYear()} NGS Transportes. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+  );
+}

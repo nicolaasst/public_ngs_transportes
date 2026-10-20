@@ -1,11 +1,47 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
+import Section from "@/components/rp/Section";
+import { Icon } from "@/components/rp/Icon";
+import { EmptyState } from "@/components/rp/EmptyState";
+import { Button } from "@/components/rp/Button";
 import { getHelpCategory } from "@/lib/help-categories";
 import { getArticlesByCategory } from "@/data/localData";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { MASCOTES } from "@/lib/brandAssets";
 
 export default function HelpCategory() {
-  const { categoria } = useParams(); const category = getHelpCategory(categoria); const articles = getArticlesByCategory(categoria);
-  return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><section className="py-14 bg-brand-onyx text-white"><div className="max-w-[1000px] mx-auto px-6 lg:px-12"><Link to="/ajuda" className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-white mb-6"><ArrowLeft className="w-3.5 h-3.5" /> Central de Ajuda</Link>{category ? <><span className="block font-ibmmono text-xs text-brand-coral uppercase font-semibold">// {category.num}</span><h1 className="text-3xl md:text-4xl font-extrabold mt-2">{category.title}</h1><p className="text-white/60 mt-3 max-w-2xl">{category.desc}</p></> : <h1 className="text-3xl font-extrabold">Categoria não encontrada</h1>}</div></section>{category && <section className="py-14"><div className="max-w-[1000px] mx-auto px-6 lg:px-12"><div className="space-y-3">{articles.length ? articles.map((article) => <Link key={article.id} to={`/ajuda/${categoria}/${article.slug}`} className="p-5 rounded-card border border-brand-border hover:shadow-card-soft flex items-start justify-between gap-4 group"><div className="flex gap-4"><FileText className="w-5 h-5 text-brand-coral mt-1" /><div><h2 className="text-base font-bold text-brand-onyx group-hover:text-brand-coral">{article.title}</h2><p className="text-sm text-brand-text-secondary mt-1">{article.excerpt}</p></div></div><ArrowRight className="w-4 h-4 text-brand-coral mt-1" /></Link>) : <p className="text-sm text-brand-text-secondary">Os artigos desta categoria serão publicados em breve.</p>}</div></div></section>}</main><Footer /></div>;
+  const { categoria } = useParams();
+  const category = getHelpCategory(categoria);
+  const articles = getArticlesByCategory(categoria);
+  if (!category) {
+    return (
+      <PageShell titulo="Categoria não encontrada">
+        <Section><EmptyState illustration={MASCOTES.circleThinking} title="Categoria não encontrada" subtitle="Essa categoria não existe na central de ajuda." action={<Button to="/ajuda">Voltar à central de ajuda</Button>} /></Section>
+      </PageShell>
+    );
+  }
+  return (
+    <PageShell titulo={category.title}>
+      <PageHero voltar={{ to: "/ajuda", rotulo: "Central de ajuda" }} eyebrow={category.num} titulo={category.title} texto={category.desc} />
+      <Section>
+        {articles.length ? (
+          <ul className="space-y-3">
+            {articles.map((a) => (
+              <li key={a.id}>
+                <Link to={`/ajuda/${categoria}/${a.slug}`} className="card rp-tap group flex items-start justify-between gap-4 p-5 transition-colors hover:border-primary">
+                  <span className="flex gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name="article" size={24} /></span>
+                    <span><span className="block text-headline-sm">{a.title}</span><span className="mt-1 block text-body-md text-muted-foreground">{a.excerpt}</span></span>
+                  </span>
+                  <Icon name="arrow_forward" size={22} className="mt-3 shrink-0 text-primary-deep transition-transform group-hover:translate-x-1" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState illustration={MASCOTES.circleThinking} title="Artigos em breve" subtitle="Os artigos desta categoria serão publicados em breve." action={<Button to="/contato" variant="outline">Falar com a equipe</Button>} />
+        )}
+      </Section>
+    </PageShell>
+  );
 }

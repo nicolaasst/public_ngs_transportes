@@ -6,13 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
     <meta name="description" content="Ngs Transportes Logística Terrestre | Entregas Last Mile, Cross-Docking, Fulfillment e Transporte Rodoviário em todo o Brasil." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#FFD80F" />
     <title>Ngs Transportes — Logística Terrestre & Last Mile</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('ngs-portal-theme') || 'system';
+          var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

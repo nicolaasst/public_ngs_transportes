@@ -1,12 +1,46 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronRight, Clock, FileText } from "lucide-react";
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
+import Section from "@/components/rp/Section";
+import { Icon } from "@/components/rp/Icon";
+import { EmptyState } from "@/components/rp/EmptyState";
+import { Button } from "@/components/rp/Button";
 import { getHelpCategory } from "@/lib/help-categories";
 import { getArticle, getArticlesByCategory } from "@/data/localData";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { MASCOTES } from "@/lib/brandAssets";
 
 export default function HelpArticle() {
-  const { categoria, artigo } = useParams(); const category = getHelpCategory(categoria); const article = getArticle(categoria, artigo); const related = getArticlesByCategory(categoria).filter((item) => item.slug !== artigo);
-  if (!category || !article) return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><div className="max-w-2xl mx-auto px-6 py-20 text-center"><FileText className="w-12 h-12 text-brand-border mx-auto mb-4" /><h1 className="text-2xl font-extrabold text-brand-onyx mb-2">Artigo não encontrado</h1><Link to={`/ajuda/${categoria}`} className="text-brand-coral font-semibold text-sm">Voltar para a categoria</Link></div></main><Footer /></div>;
-  return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><section className="py-12 bg-brand-surface-alt border-b border-brand-border"><div className="max-w-[900px] mx-auto px-6 lg:px-12"><Link to={`/ajuda/${categoria}`} className="inline-flex items-center gap-1.5 text-xs text-brand-text-secondary hover:text-brand-coral mb-6"><ArrowLeft className="w-4 h-4" /> {category.title}</Link><span className="block font-ibmmono text-xs text-brand-coral uppercase font-semibold">{category.title}</span><h1 className="text-2xl md:text-4xl font-extrabold text-brand-onyx mt-2">{article.title}</h1><div className="flex items-center gap-1.5 text-xs text-brand-text-secondary mt-4"><Clock className="w-3.5 h-3.5" /> {article.read_time}</div></div></section><section className="py-12"><div className="max-w-[900px] mx-auto px-6 lg:px-12"><div className="prose prose-sm max-w-none text-brand-text-secondary leading-relaxed">{article.content.split("\n\n").map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>{related.length > 0 && <div className="mt-12 pt-8 border-t border-brand-border"><h2 className="text-sm font-bold text-brand-onyx uppercase tracking-wider mb-4">Artigos relacionados</h2><div className="grid sm:grid-cols-2 gap-3">{related.map((item) => <Link key={item.id} to={`/ajuda/${categoria}/${item.slug}`} className="p-4 rounded-xl bg-brand-surface-alt border border-brand-border group"><h3 className="text-sm font-bold text-brand-onyx group-hover:text-brand-coral">{item.title}</h3><span className="flex items-center text-xs font-bold text-brand-coral gap-1 mt-2">Ler <ChevronRight className="w-3.5 h-3.5" /></span></Link>)}</div></div>}</div></section></main><Footer /></div>;
+  const { categoria, artigo } = useParams();
+  const category = getHelpCategory(categoria);
+  const article = getArticle(categoria, artigo);
+  const related = getArticlesByCategory(categoria).filter((item) => item.slug !== artigo);
+  if (!category || !article) {
+    return (
+      <PageShell titulo="Artigo não encontrado">
+        <Section><EmptyState illustration={MASCOTES.circleThinking} title="Artigo não encontrado" subtitle="Esse artigo não existe ou foi movido." action={<Button to={category ? `/ajuda/${categoria}` : "/ajuda"}>Voltar</Button>} /></Section>
+      </PageShell>
+    );
+  }
+  return (
+    <PageShell titulo={article.title}>
+      <PageHero voltar={{ to: `/ajuda/${categoria}`, rotulo: category.title }} eyebrow={category.title} titulo={article.title}>
+        <p className="mt-4 inline-flex items-center gap-1.5 text-body-md text-[hsl(240_3%_75%)]"><Icon name="schedule" size={18} />{article.read_time}</p>
+      </PageHero>
+      <Section>
+        <article className="max-w-[720px] space-y-4 text-body-lg text-muted-foreground">
+          {article.content.split("\n\n").map((p) => <p key={p}>{p}</p>)}
+        </article>
+        {related.length > 0 && (
+          <div className="mt-12 max-w-[720px] border-t border-border pt-8">
+            <h2 className="eyebrow">Artigos relacionados</h2>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {related.map((item) => (
+                <li key={item.id}><Link to={`/ajuda/${categoria}/${item.slug}`} className="card rp-tap flex min-h-[64px] items-center justify-between gap-3 p-4 text-label-lg">{item.title}<Icon name="chevron_right" size={22} className="shrink-0 text-primary-deep" /></Link></li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Section>
+    </PageShell>
+  );
 }

@@ -1,8 +1,60 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Building2, CheckCircle, Lock, Mail, Navigation, Send, Shield, Target, Truck, User } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-const pillars = [{ icon: CheckCircle, title: "Não comercialização", desc: "Dados não são vendidos ou alugados para publicidade." }, { icon: Lock, title: "Proteção técnica", desc: "Aplicamos controles de acesso e boas práticas de segurança." }, { icon: Target, title: "Finalidade", desc: "Tratamos dados para executar serviços e cumprir obrigações." }, { icon: Shield, title: "Conformidade", desc: "Processos orientados pela LGPD e pela legislação aplicável." }];
-const categories = [{ icon: Building2, title: "Embarcadores", items: ["Razão social e CNPJ", "Dados de contrato", "Contatos corporativos"] }, { icon: User, title: "Destinatários", items: ["Nome e endereço", "Telefone para notificações", "Comprovante de recebimento"] }, { icon: Truck, title: "Motoristas e frotas", items: ["Dados profissionais", "Informações do veículo", "Registros operacionais"] }, { icon: Navigation, title: "Geolocalização", items: ["Posição durante a rota", "Paradas operacionais", "Dados de roteirização"] }];
-export default function Privacy() { const [email, setEmail] = useState(""); const [sent, setSent] = useState(false); const submit = (event) => { event.preventDefault(); window.location.href = `mailto:dpo@ngstransportes.com.br?subject=Solicitação LGPD&body=Solicitante: ${encodeURIComponent(email)}`; setSent(true); }; return <div className="min-h-screen bg-white"><Header /><main className="pt-20"><div className="w-full bg-brand-surface-alt border-b border-brand-border"><div className="max-w-[1392px] mx-auto px-6 lg:px-12 py-3 flex gap-2 text-xs text-brand-text-secondary"><Link to="/">Início</Link><span>/</span><span className="font-semibold text-brand-onyx">Privacidade</span></div></div><section className="py-14"><div className="max-w-[1100px] mx-auto px-6 lg:px-12"><span className="font-ibmmono text-xs text-brand-coral uppercase font-semibold">// LGPD</span><h1 className="text-3xl md:text-5xl font-extrabold text-brand-onyx mt-2">Política de privacidade</h1><p className="text-brand-text-secondary mt-4 max-w-3xl leading-relaxed">Esta política explica como a Ngs Transportes coleta, utiliza, protege e compartilha informações necessárias para suas operações logísticas.</p></div></section><section className="py-14 bg-brand-surface-alt"><div className="max-w-[1392px] mx-auto px-6 lg:px-12 grid md:grid-cols-2 lg:grid-cols-4 gap-5">{pillars.map((pillar) => <div key={pillar.title} className="p-6 bg-white rounded-card border border-brand-border"><pillar.icon className="w-7 h-7 text-brand-coral mb-4" /><h2 className="font-bold text-brand-onyx">{pillar.title}</h2><p className="text-sm text-brand-text-secondary mt-2">{pillar.desc}</p></div>)}</div></section><section className="py-14"><div className="max-w-[1100px] mx-auto px-6 lg:px-12"><h2 className="text-2xl md:text-3xl font-extrabold text-brand-onyx mb-8">Dados que podem ser processados</h2><div className="grid md:grid-cols-2 gap-5">{categories.map((category) => <div key={category.title} className="p-6 rounded-card bg-brand-surface-alt border border-brand-border"><category.icon className="w-7 h-7 text-brand-coral mb-4" /><h3 className="font-bold text-brand-onyx">{category.title}</h3><ul className="mt-3 space-y-1 text-sm text-brand-text-secondary">{category.items.map((item) => <li key={item}>• {item}</li>)}</ul></div>)}</div></div></section><section className="py-14 bg-brand-surface-alt"><div className="max-w-[700px] mx-auto px-6 text-center"><Mail className="w-9 h-9 text-brand-coral mx-auto mb-4" /><h2 className="text-2xl font-extrabold text-brand-onyx">Solicite informações sobre seus dados</h2><p className="text-sm text-brand-text-secondary mt-2">Envie seu e-mail para abrir uma solicitação ao canal de privacidade.</p><form onSubmit={submit} className="flex gap-2 mt-6"><input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="seu@email.com" className="flex-1 h-11 px-3 bg-white border border-brand-border rounded-lg text-sm" /><button className="h-11 px-5 rounded-lg bg-brand-coral text-white text-xs font-bold uppercase flex items-center gap-2"><Send className="w-4 h-4" /> Enviar</button></form>{sent && <p className="text-xs text-emerald-600 mt-3">Seu cliente de e-mail foi acionado.</p>}<p className="text-xs text-brand-text-secondary mt-5 flex items-center justify-center gap-1"><Lock className="w-3 h-3" /> Canal de privacidade: dpo@ngstransportes.com.br</p></div></section></main><Footer /></div>; }
+import PageShell from "@/components/layout/PageShell";
+import PageHero from "@/components/layout/PageHero";
+import Section from "@/components/rp/Section";
+import { Card } from "@/components/rp/Card";
+import { Icon } from "@/components/rp/Icon";
+import { Field } from "@/components/rp/Field";
+import { Button } from "@/components/rp/Button";
+
+const pillars = [{ icon: "check_circle", title: "Não comercialização", desc: "Dados não são vendidos ou alugados para publicidade." }, { icon: "lock", title: "Proteção técnica", desc: "Aplicamos controles de acesso e boas práticas de segurança." }, { icon: "target", title: "Finalidade", desc: "Tratamos dados para executar serviços e cumprir obrigações." }, { icon: "shield", title: "Conformidade", desc: "Processos orientados pela LGPD e pela legislação aplicável." }];
+const categories = [{ icon: "apartment", title: "Embarcadores", items: ["Razão social e CNPJ", "Dados de contrato", "Contatos corporativos"] }, { icon: "person", title: "Destinatários", items: ["Nome e endereço", "Telefone para notificações", "Comprovante de recebimento"] }, { icon: "local_shipping", title: "Motoristas e frotas", items: ["Dados profissionais", "Informações do veículo", "Registros operacionais"] }, { icon: "navigation", title: "Geolocalização", items: ["Posição durante a rota", "Paradas operacionais", "Dados de roteirização"] }];
+
+export default function Privacy() {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const submit = (event) => {
+    event.preventDefault();
+    window.location.href = `mailto:dpo@ngstransportes.com.br?subject=${encodeURIComponent("Solicitação LGPD")}&body=${encodeURIComponent(`Solicitante: ${email}`)}`;
+    setSent(true);
+  };
+  return (
+    <PageShell titulo="Privacidade">
+      <PageHero eyebrow="LGPD" titulo="Política de privacidade" texto="Como a NGS Transportes coleta, utiliza, protege e compartilha as informações necessárias para as suas operações logísticas." />
+      <Section tom="muted" eyebrow="Princípios" titulo="Como tratamos os dados">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {pillars.map((p) => (
+            <Card key={p.title}>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name={p.icon} size={26} /></span>
+              <h3 className="text-headline-sm mt-4">{p.title}</h3>
+              <p className="mt-2 text-body-md text-muted-foreground">{p.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+      <Section eyebrow="Dados" titulo="Dados que podem ser processados">
+        <div className="grid gap-4 md:grid-cols-2">
+          {categories.map((c) => (
+            <Card key={c.title}>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name={c.icon} size={26} /></span>
+              <h3 className="text-headline-sm mt-4">{c.title}</h3>
+              <ul className="mt-3 space-y-1 text-body-md text-muted-foreground">{c.items.map((item) => <li key={item} className="flex gap-2"><Icon name="check" size={18} className="mt-0.5 shrink-0 text-primary-deep" />{item}</li>)}</ul>
+            </Card>
+          ))}
+        </div>
+      </Section>
+      <Section tom="muted">
+        <div className="mx-auto max-w-xl text-center">
+          <Icon name="mail" size={40} className="text-primary-deep" />
+          <h2 className="text-headline-md mt-2">Solicite informações sobre seus dados</h2>
+          <p className="mt-2 text-body-md text-muted-foreground">Informe seu e-mail para abrir uma solicitação ao canal de privacidade.</p>
+          <form onSubmit={submit} className="mt-6 space-y-3 text-left">
+            <Field label="Seu e-mail" icon="alternate_email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" autoComplete="email" />
+            <Button type="submit" className="w-full"><Icon name="send" size={20} />Enviar solicitação</Button>
+          </form>
+          {sent && <p role="status" className="mt-3 text-body-sm text-muted-foreground">Abrimos o seu aplicativo de e-mail. Se ele não abriu, escreva para dpo@ngstransportes.com.br.</p>}
+        </div>
+      </Section>
+    </PageShell>
+  );
+}
