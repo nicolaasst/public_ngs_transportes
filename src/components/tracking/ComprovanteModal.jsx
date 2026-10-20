@@ -3,7 +3,7 @@ import { Icon } from "@/components/rp/Icon";
 import { Button } from "@/components/rp/Button";
 import { MonoText } from "@/components/rp/MonoText";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { baixarComprovante, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
+import { baixarComprovante, codigoNgs, codigoSecundario, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
 
 const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
@@ -31,7 +31,7 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
       <DialogContent className="bg-card text-card-foreground rounded-2xl border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-headline-md">Comprovante de entrega</DialogTitle>
-          <DialogDescription asChild><p className="text-body-md text-muted-foreground">Pedido <MonoText size="sm">{dados?.codigo}</MonoText></p></DialogDescription>
+          <DialogDescription asChild><p className="text-body-md text-muted-foreground">Pedido <MonoText size="sm">{codigoNgs(dados)}</MonoText>{codigoSecundario(dados) && <MonoText size="sm" className="ml-2 !font-normal opacity-70">{codigoSecundario(dados)}</MonoText>}</p></DialogDescription>
         </DialogHeader>
 
         <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-3 rounded-2xl bg-muted p-4 text-body-md">

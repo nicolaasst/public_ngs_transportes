@@ -194,6 +194,18 @@ describe("ações do rastreio", () => {
     expect(screen.queryByRole("button", { name: /imprimir/i })).toBeNull();
   });
 
+  it("destaca o código NGS e mostra o código atual (AA…) menor ao lado de \"Pedido\"", async () => {
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ codigo: "AA0106805703", codigo_original: "NGSAM9002082BR", comprovante: null }) });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    const grande = await screen.findByText("NGSAM9002082BR");
+    expect(grande.className).toContain("text-code-lg");
+    const pequeno = screen.getByText("AA0106805703");
+    expect(pequeno.className).toContain("text-code-sm");
+    expect(pequeno.parentElement).toHaveTextContent(/^Pedido\s*AA0106805703$/);
+  });
+
   it("pedido em andamento: sem câmera, só o ícone de compartilhar no topo do card", async () => {
     consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, comprovante: null }) });
     const user = userEvent.setup();
