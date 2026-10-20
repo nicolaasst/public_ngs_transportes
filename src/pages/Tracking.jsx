@@ -19,11 +19,10 @@ export default function Tracking() {
   const location = useLocation();
   const inicial = location.state ?? {};
   const [codigo, setCodigo] = useState(inicial.codigo ?? "");
-  const [fator, setFator] = useState(inicial.fator ?? "");
   const [consulta, setConsulta] = useState(/** @type {{ estado: string, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
   // última consulta feita (para "Atualizar" e para a atualização automática, sem reler o que o visitante digitou depois)
-  const ultima = useRef(/** @type {{ codigo: string, fator: string } | null} */ (null));
+  const ultima = useRef(/** @type {{ codigo: string } | null} */ (null));
   const [atualizando, setAtualizando] = useState(false);
 
   // página de resultado fora dos buscadores
@@ -35,10 +34,10 @@ export default function Tracking() {
     return () => meta.remove();
   }, []);
 
-  const enviar = async (c = codigo, f = fator) => {
-    ultima.current = { codigo: c, fator: f };
+  const enviar = async (c = codigo) => {
+    ultima.current = { codigo: c };
     setConsulta({ estado: "carregando" });
-    setConsulta(await consultarRastreio({ codigo: c, fator: f }));
+    setConsulta(await consultarRastreio({ codigo: c }));
   };
 
   // Atualiza o resultado já exibido sem piscar a tela; se a nova consulta falhar, mantém o último resultado bom.
@@ -60,12 +59,11 @@ export default function Tracking() {
     return () => clearInterval(id);
   }, [emRota]);
 
-  // vindo do formulário da home (código e confirmação chegam por state de rota, nunca pela URL)
+  // vindo do formulário da home (o código chega por state de rota, nunca pela URL)
   useEffect(() => {
-    if (jaConsultou.current || !inicial.codigo || !inicial.fator) return;
+    if (jaConsultou.current || !inicial.codigo) return;
     jaConsultou.current = true;
-    enviar(inicial.codigo, inicial.fator);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    enviar(inicial.codigo);
   }, []);
 
   const aviso = AVISOS[consulta.estado];
@@ -78,10 +76,10 @@ export default function Tracking() {
             <div className="text-center">
               <span className="font-ibmmono text-xs text-brand-coral uppercase font-semibold">// Visibilidade operacional</span>
               <h1 className="text-3xl md:text-5xl font-extrabold mt-2">Rastreie sua remessa</h1>
-              <p className="text-white/60 mt-4">Informe o código do pedido e um dado de confirmação do destinatário.</p>
+              <p className="text-white/60 mt-4">Informe o código de rastreio da sua remessa.</p>
             </div>
             <div className="mt-8 max-w-xl mx-auto bg-white text-brand-onyx rounded-card p-5">
-              <FormRastreio codigo={codigo} fator={fator} onCodigo={setCodigo} onFator={setFator} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
+              <FormRastreio codigo={codigo} onCodigo={setCodigo} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
             </div>
             <div className="max-w-xl mx-auto" aria-live="polite">
               {aviso && <p role="alert" className="mt-6 p-4 bg-white/10 border border-white/10 rounded-card text-sm">{aviso}</p>}

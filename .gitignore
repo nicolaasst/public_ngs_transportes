@@ -3,3 +3,6 @@ dist
 .env
 .env.*
 *.local
+
+# .env.production só tem a URL pública da API de rastreio (sem segredos) e vai junto para o Vercel
+!.env.production

@@ -1,8 +1,4 @@
-import { lazy, Suspense } from "react";
-import BarreiraDeErro from "@/components/tracking/BarreiraDeErro";
-import { CheckCircle, MapPin, RefreshCw } from "lucide-react";
-
-const MapaAproximado = lazy(() => import("@/components/tracking/MapaAproximado"));
+import { CheckCircle, RefreshCw } from "lucide-react";
 
 const hora = (iso) => {
   const d = new Date(iso);
@@ -10,7 +6,6 @@ const hora = (iso) => {
 };
 
 export default function ResultadoRastreio({ dados, onAtualizar, atualizando = false }) {
-  const pos = dados.posicao;
   const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
   return (
     <section aria-label="Resultado do rastreio" className="mt-6 p-5 bg-white text-brand-onyx rounded-card text-left">
@@ -37,20 +32,6 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
           ))}
         </ol>
       )}
-
-      {dados.em_rota && pos && pos.oculto && (
-        <p className="mt-5 text-sm flex items-center gap-2"><MapPin className="w-4 h-4 text-brand-coral" aria-hidden="true" />Em rota próximo ao destino/origem.</p>
-      )}
-      {dados.em_rota && pos && !pos.oculto && (
-        <div className="mt-5">
-          <BarreiraDeErro>
-            <Suspense fallback={<p className="text-xs text-brand-text-secondary">Carregando o mapa…</p>}>
-              <MapaAproximado centro={pos.centro} raioM={pos.raio_m} />
-            </Suspense>
-          </BarreiraDeErro>
-        </div>
-      )}
-      {dados.em_rota && !pos && <p className="mt-5 text-xs text-brand-text-secondary">A localização aproximada ainda não está disponível. Ela aparece alguns minutos depois da saída.</p>}
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-brand-border pt-3 text-xs text-brand-text-secondary">
         <span>{hora(dados.atualizado_em) ? `Consultado em ${hora(dados.atualizado_em)}` : ""}</span>
