@@ -3,7 +3,7 @@
 
 const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
-  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }) : "—";
+  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }) : "Não informado";
 };
 
 export const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -58,7 +58,7 @@ footer{margin-top:28px;color:#777;font-size:11px;border-top:1px solid #eee;paddi
 <dl><dt>Código de rastreio</dt><dd>${esc(codigoNgs(dados))}</dd><dt>Destino</dt><dd>${esc(dados?.destino)}</dd>
 <dt>Entregue em</dt><dd>${esc(fmt(c.entregue_em))}</dd><dt>Recebido por</dt><dd>${esc(c.recebido_por || "Não informado")}</dd></dl>
 ${fotos.length ? `<h2>Comprovação</h2><div class="fotos">${fotos.map((f) => `<a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer"><img src="${esc(f.inline || f.url)}" alt="Comprovação da entrega" referrerpolicy="no-referrer"></a>`).join("")}</div>` : ""}
-${eventos.length ? `<h2>Histórico</h2><ol>${eventos.map((e) => `<li>${esc(e.texto)} — ${esc(fmt(e.em))}</li>`).join("")}</ol>` : ""}
+${eventos.length ? `<h2>Histórico</h2><ol>${eventos.map((e) => `<li>${esc(fmt(e.em))}: ${esc(e.texto)}</li>`).join("")}</ol>` : ""}
 <footer>Documento informativo gerado a partir do rastreio público. Consulte o código em nosso portal para a situação atualizada.</footer>
 <p class="noprint"><button onclick="window.print()">Imprimir / salvar como PDF</button></p></body></html>`;
 }
@@ -127,7 +127,7 @@ export async function baixarComprovante(dados, { carregar = (url, inline) => car
   linha(`NGS Transportes · gerado em ${fmt(new Date().toISOString())}`, 9, false, 9);
   linha(`Situação: ${dados?.situacao || "Entregue"}`, 12, true);
   linha(`Código de rastreio: ${codigoNgs(dados)}`);
-  linha(`Destino: ${dados?.destino ?? "—"}`);
+  linha(`Destino: ${dados?.destino ?? "Não informado"}`);
   linha(`Entregue em: ${fmt(c.entregue_em)}`);
   linha(`Recebido por: ${c.recebido_por || "Não informado"}`, 11, false, 9);
 
@@ -149,7 +149,7 @@ export async function baixarComprovante(dados, { carregar = (url, inline) => car
   const eventos = (Array.isArray(dados?.eventos) ? dados.eventos : []).slice(0, 30);
   if (eventos.length) {
     linha("Histórico", 12, true);
-    eventos.forEach((e) => linha(`${fmt(e.em)} — ${e.texto}`, 9, false, 5));
+    eventos.forEach((e) => linha(`${fmt(e.em)}: ${e.texto}`, 9, false, 5));
   }
   pdf.save(`${nomeArquivo(dados)}.pdf`);
 }

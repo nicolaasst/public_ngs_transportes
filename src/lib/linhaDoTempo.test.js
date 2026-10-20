@@ -10,7 +10,7 @@ describe("classificarEvento", () => {
     ["Em trânsito", "transito", "andamento"],
     ["Objeto encaminhado para Unidade de Tratamento", "transito", "andamento"],
     ["Em separação", "separacao", "andamento"],
-    ["Tentativa de entrega sem sucesso — uma nova tentativa será programada", "falha", "alerta"],
+    ["Tentativa de entrega sem sucesso, uma nova tentativa será programada", "falha", "alerta"],
     ["Objeto não entregue - carteiro não atendido", "falha", "alerta"],
     ["Pedido cancelado", "cancelado", "erro"],
     ["Em devolução", "devolucao", "alerta"],

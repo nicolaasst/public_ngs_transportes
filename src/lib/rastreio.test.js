@@ -42,6 +42,18 @@ describe("consultarRastreio", () => {
   });
 });
 
+describe("sem travessão no site público", () => {
+  it("troca — e – por vírgula na situação, destino e eventos (um pedido e lista)", async () => {
+    const bruto = { situacao: "Tentativa sem sucesso — uma nova tentativa será programada", destino: "Paris – FR", eventos: [{ texto: "A — B", em: "2026-10-17T10:00:00Z" }] };
+    const um = await consultarRastreio({ codigo: "NX-1", turnstileToken: "t" }, { base: "https://a", buscar: async () => resposta(200, bruto) });
+    expect(um.dados.situacao).toBe("Tentativa sem sucesso, uma nova tentativa será programada");
+    expect(um.dados.destino).toBe("Paris, FR");
+    expect(um.dados.eventos[0].texto).toBe("A, B");
+    const varios = await consultarRastreio({ codigos: ["A", "B"], turnstileToken: "t" }, { base: "https://a", buscar: async () => resposta(200, { pedidos: [bruto] }) });
+    expect(varios.pedidos[0].situacao).not.toMatch(/[—–]/);
+  });
+});
+
 describe("configuração", () => {
   it("lê a URL da API do ambiente e remove a barra final", () => {
     expect(urlDaApi({ VITE_RASTREIO_API_URL: "https://x.supabase.co/functions/v1/rastreio-publico/" })).toBe("https://x.supabase.co/functions/v1/rastreio-publico");

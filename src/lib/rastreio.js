@@ -9,6 +9,12 @@
 
 export const MENSAGEM_NAO_ENCONTRADO = "Pedido não encontrado. Confira o código de rastreio.";
 
+/** O site público não usa travessão: o que vier da API (inclusive texto da transportadora) troca "—"/"–" por vírgula. */
+export const semTravessao = (t) => (typeof t === "string" ? t.replace(/\s*[—–]\s*/g, ", ") : t);
+const limparPedido = (p) => (p && typeof p === "object"
+  ? { ...p, situacao: semTravessao(p.situacao), destino: semTravessao(p.destino), eventos: Array.isArray(p.eventos) ? p.eventos.map((e) => ({ ...e, texto: semTravessao(e?.texto) })) : p.eventos }
+  : p);
+
 export function urlDaApi(env = import.meta.env) {
   const url = String(env?.VITE_RASTREIO_API_URL ?? "").trim().replace(/\/+$/, "");
   return url || null;
@@ -41,8 +47,9 @@ export async function consultarRastreio({ codigo, codigos, documento, turnstileT
   if (!resposta.ok) return { estado: "indisponivel" };
   try {
     const json = await resposta.json();
-    if (Array.isArray(json?.pedidos)) return { estado: "ok", pedidos: json.pedidos, naoEncontrados: json.nao_encontrados ?? [], truncado: json.truncado === true };
-    return { estado: "ok", dados: json, pedidos: [json], naoEncontrados: [], truncado: false };
+    if (Array.isArray(json?.pedidos)) return { estado: "ok", pedidos: json.pedidos.map(limparPedido), naoEncontrados: json.nao_encontrados ?? [], truncado: json.truncado === true };
+    const dados = limparPedido(json);
+    return { estado: "ok", dados, pedidos: [dados], naoEncontrados: [], truncado: false };
   } catch {
     return { estado: "indisponivel" };
   }
