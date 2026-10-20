@@ -162,41 +162,57 @@ vi.mock("@/lib/comprovante", async (original) => ({
 const abrirMock = vi.fn(); const baixarMock = vi.fn(); const compartilharMock = vi.fn();
 
 describe("ações do rastreio", () => {
-  const entregue = () => dados({ em_rota: false, situacao: "Entregue em 17/10/2026", comprovante: { entregue_em: "2026-10-17T15:00:00Z", recebido_por: "Maria S.", arquivos: [] } });
+  const entregue = () => dados({ em_rota: false, situacao: "Entregue em 17/10/2026", comprovante: { entregue_em: "2026-10-17T15:00:00Z", recebido_por: "Maria S.", arquivos: ["https://r2.exemplo/f1.jpg"] } });
 
-  it("pedido entregue mostra os 3 botões e cada um chama a ação certa", async () => {
+  it("não há mais botões fixos de comprovante/baixar/compartilhar no corpo do card", async () => {
+    consultar.mockResolvedValue({ estado: "ok", dados: entregue() });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    await screen.findByText("Entregue em 17/10/2026");
+    expect(screen.queryByRole("button", { name: /^baixar comprovante$/i })).toBeNull();
+    expect(screen.queryByText(/Abrir comprovante de entrega$/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Abrir comprovante de entrega" })).toBeInTheDocument(); // só o ícone da câmera
+    expect(screen.getByRole("button", { name: "Compartilhar rastreio" })).toBeInTheDocument(); // só o ícone
+  });
+
+  it("câmera abre o modal com as informações; dele se baixa, compartilha e imprime", async () => {
     abrirMock.mockReturnValue(true); baixarMock.mockResolvedValue(); compartilharMock.mockResolvedValue("copiado");
     consultar.mockResolvedValue({ estado: "ok", dados: entregue() });
     const user = userEvent.setup();
     abrir();
     await preencher(user);
-    await user.click(await screen.findByRole("button", { name: /abrir comprovante de entrega/i }));
-    expect(abrirMock).toHaveBeenCalled();
+    await user.click(await screen.findByRole("button", { name: "Abrir comprovante de entrega" }));
+    const modal = await screen.findByRole("dialog");
+    expect(modal).toHaveTextContent("Comprovante de entrega");
+    expect(modal).toHaveTextContent("Maria S.");
+    expect(modal.querySelector('img[src="https://r2.exemplo/f1.jpg"]')).not.toBeNull();
     await user.click(screen.getByRole("button", { name: /baixar comprovante/i }));
     await waitFor(() => expect(baixarMock).toHaveBeenCalled());
-    await user.click(screen.getByRole("button", { name: /compartilhar rastreio/i }));
+    await user.click(screen.getByRole("button", { name: /^compartilhar$/i }));
     expect(await screen.findByText(/Link do rastreio copiado/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /imprimir/i }));
+    expect(abrirMock).toHaveBeenCalled();
   });
 
-  it("pedido em andamento só mostra Compartilhar (sem comprovante)", async () => {
+  it("pedido em andamento: sem câmera, só o ícone de compartilhar no topo do card", async () => {
     consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, comprovante: null }) });
     const user = userEvent.setup();
     abrir();
     await preencher(user);
     await screen.findByText("Em rota de entrega");
-    expect(screen.getByRole("button", { name: /compartilhar rastreio/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /abrir comprovante/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /baixar comprovante/i })).toBeNull();
+    expect(screen.getByRole("button", { name: "Compartilhar rastreio" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Abrir comprovante de entrega" })).toBeNull();
   });
 
-  it("pop-up bloqueado avisa o usuário", async () => {
-    abrirMock.mockReturnValue(false);
-    consultar.mockResolvedValue({ estado: "ok", dados: entregue() });
+  it("o ícone de compartilhar copia o link e avisa", async () => {
+    compartilharMock.mockResolvedValue("copiado");
+    consultar.mockResolvedValue({ estado: "ok", dados: dados({ em_rota: false, comprovante: null }) });
     const user = userEvent.setup();
     abrir();
     await preencher(user);
-    await user.click(await screen.findByRole("button", { name: /abrir comprovante de entrega/i }));
-    expect(await screen.findByText(/bloqueou a nova aba/)).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Compartilhar rastreio" }));
+    expect(await screen.findByText(/Link do rastreio copiado/)).toBeInTheDocument();
   });
 
   it("link compartilhado (?codigo=) consulta sozinho", async () => {
