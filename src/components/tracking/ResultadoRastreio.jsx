@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LinhaDoTempo from "@/components/tracking/LinhaDoTempo";
 import ComprovanteModal from "@/components/tracking/ComprovanteModal";
-import { compartilharRastreio, temComprovante } from "@/lib/comprovante";
+import { codigoNgs, codigoSecundario, compartilharRastreio, temComprovante } from "@/lib/comprovante";
 import { Icon } from "@/components/rp/Icon";
 import { Card } from "@/components/rp/Card";
 import { StatusPill } from "@/components/rp/StatusPill";
@@ -32,8 +32,10 @@ export default function ResultadoRastreio({ dados, onAtualizar, atualizando = fa
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <StatusPill status={tom}>{dados.situacao}</StatusPill>
-          <p className="mt-3 text-label-md text-muted-foreground">Pedido</p>
-          <MonoText size="lg">{dados.codigo}</MonoText>
+          <p className="mt-3 flex items-baseline gap-2 text-label-md text-muted-foreground">
+            Pedido{codigoSecundario(dados) && <MonoText size="sm" className="!font-normal opacity-70">{codigoSecundario(dados)}</MonoText>}
+          </p>
+          <MonoText size="lg">{codigoNgs(dados)}</MonoText>
           <p className="mt-2 text-body-md text-muted-foreground">
             Destino: <span className="text-foreground">{dados.destino}</span>
             {dados.previsao_entrega ? <> · Previsão: <span className="text-foreground">{dados.previsao_entrega}</span></> : null}
