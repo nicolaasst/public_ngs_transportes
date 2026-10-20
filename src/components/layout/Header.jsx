@@ -24,7 +24,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="page-container flex h-16 items-center justify-between gap-4 md:h-[72px]">
-        <Link to="/" aria-label="NGS Transportes — página inicial" className="rp-tap flex items-center gap-3">
+        <Link to="/" aria-label="NGS Transportes, página inicial" className="rp-tap flex items-center gap-3">
           <Logo variant="mark" size={40} />
           <span className="text-headline-sm leading-none">NGS <span className="font-medium text-muted-foreground">Transportes</span></span>
         </Link>

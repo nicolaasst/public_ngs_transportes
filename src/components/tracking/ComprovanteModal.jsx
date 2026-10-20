@@ -7,7 +7,7 @@ import { baixarComprovante, codigoNgs, codigoSecundario, compartilharRastreio, f
 
 const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
-  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }) : "—";
+  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }) : "Não informado";
 };
 
 /** Modal do comprovante de entrega: informações + comprovação + Baixar / Compartilhar / Imprimir. */
@@ -38,7 +38,7 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
           <dt className="text-muted-foreground">Situação</dt><dd className="text-label-lg">{dados?.situacao || "Entregue"}</dd>
           <dt className="text-muted-foreground">Entregue em</dt><dd className="text-label-lg">{fmt(c.entregue_em)}</dd>
           <dt className="text-muted-foreground">Recebido por</dt><dd className="text-label-lg">{c.recebido_por || "Não informado"}</dd>
-          <dt className="text-muted-foreground">Destino</dt><dd className="text-label-lg">{dados?.destino || "—"}</dd>
+          <dt className="text-muted-foreground">Destino</dt><dd className="text-label-lg">{dados?.destino || "Não informado"}</dd>
         </dl>
 
         {fotos.length > 0 ? (
