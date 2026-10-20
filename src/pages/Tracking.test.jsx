@@ -253,3 +253,76 @@ describe("linha do tempo", () => {
     expect(atual.querySelector(".motion-reduce\\:animate-none")).not.toBeNull();
   });
 });
+
+describe("abas, vários códigos e CPF/CNPJ", () => {
+  const pedido = (n, extra = {}) => dados({ codigo: `NGSSP00000000${n}BR`, destino: `Cidade ${n}/SP`, situacao: n === 1 ? "Entregue em 17/10/2026" : "Saiu para entrega", em_rota: n !== 1, ...extra });
+
+  it("vários códigos: uma única consulta com a lista; resultados colapsados e abertos um a um", async () => {
+    consultar.mockResolvedValue({ estado: "ok", pedidos: [pedido(1), pedido(2), pedido(3)], naoEncontrados: ["NGSXX9BR"] });
+    const user = userEvent.setup();
+    abrir();
+    await user.type(screen.getByLabelText("Código de rastreio"), "ngssp000000001br, NGSSP000000002BR NGSSP000000003BR ngssp000000001br");
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    await waitFor(() => expect(consultar).toHaveBeenCalledWith({ codigos: ["NGSSP000000001BR", "NGSSP000000002BR", "NGSSP000000003BR"], turnstileToken: "tok-1" }));
+    expect(await screen.findByText("3 pedidos encontrados")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("NGSXX9BR");
+    const cabecalhos = screen.getAllByRole("button", { expanded: false }).filter((b) => b.getAttribute("aria-controls")?.startsWith("pedido-"));
+    expect(cabecalhos).toHaveLength(3);
+    expect(screen.queryByTestId("evento-atual")).toBeNull(); // nada aberto ainda
+    await user.click(cabecalhos[1]);
+    expect(await screen.findByTestId("evento-atual")).toBeInTheDocument();
+    expect(cabecalhos[1]).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: /abrir todos/i }));
+    expect(screen.getAllByTestId("evento-atual")).toHaveLength(3);
+    await user.click(screen.getByRole("button", { name: /fechar todos/i }));
+    expect(screen.queryByTestId("evento-atual")).toBeNull();
+  });
+
+  it("mais de 10 códigos: avisa e não consulta", async () => {
+    const user = userEvent.setup();
+    abrir();
+    await user.type(screen.getByLabelText("Código de rastreio"), Array.from({ length: 11 }, (_, i) => `NGSSP00000000${i}BR`).join(" "));
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/no máximo 10/);
+    expect(consultar).not.toHaveBeenCalled();
+  });
+
+  it("aba CPF/CNPJ: máscara, validação dos dígitos e lista de todos os pedidos do documento", async () => {
+    consultar.mockResolvedValue({ estado: "ok", pedidos: [pedido(1), pedido(2)], naoEncontrados: [], truncado: false });
+    const user = userEvent.setup();
+    abrir();
+    await user.click(screen.getByRole("tab", { name: /cpf ou cnpj/i }));
+    const campo = screen.getByLabelText("CPF ou CNPJ");
+    await user.type(campo, "52998224724");
+    expect(campo).toHaveValue("529.982.247-24");
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    expect(await screen.findByText(/inválido/i)).toBeInTheDocument();
+    expect(consultar).not.toHaveBeenCalled();
+    await user.clear(campo);
+    await user.type(campo, "52998224725");
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    await waitFor(() => expect(consultar).toHaveBeenCalledWith({ documento: "529.982.247-25", turnstileToken: "tok-1" }));
+    expect(await screen.findByText("2 pedidos encontrados")).toBeInTheDocument();
+    expect(screen.getByText("Cidade 2/SP", { exact: false })).toBeInTheDocument();
+  });
+
+  it("CPF sem pedidos: mensagem própria", async () => {
+    consultar.mockResolvedValue({ estado: "nao_encontrado" });
+    const user = userEvent.setup();
+    abrir();
+    await user.click(screen.getByRole("tab", { name: /cpf ou cnpj/i }));
+    await user.type(screen.getByLabelText("CPF ou CNPJ"), "52998224725");
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Nenhum pedido encontrado/);
+  });
+
+  it("um único pedido por documento abre direto, sem colapsar", async () => {
+    consultar.mockResolvedValue({ estado: "ok", pedidos: [pedido(2)], naoEncontrados: [] });
+    const user = userEvent.setup();
+    abrir();
+    await user.click(screen.getByRole("tab", { name: /cpf ou cnpj/i }));
+    await user.type(screen.getByLabelText("CPF ou CNPJ"), "52998224725");
+    await user.click(screen.getByRole("button", { name: /rastrear/i }));
+    expect(await screen.findByTestId("evento-atual")).toBeInTheDocument();
+  });
+});

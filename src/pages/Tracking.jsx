@@ -3,13 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import PageShell from "@/components/layout/PageShell";
 import PageHero from "@/components/layout/PageHero";
 import FormRastreio from "@/components/tracking/FormRastreio";
-import ResultadoRastreio from "@/components/tracking/ResultadoRastreio";
+import ListaRastreio from "@/components/tracking/ListaRastreio";
 import { consultarRastreio, MENSAGEM_NAO_ENCONTRADO } from "@/lib/rastreio";
 import { Card } from "@/components/rp/Card";
 import { Icon } from "@/components/rp/Icon";
 import { StatusPill } from "@/components/rp/StatusPill";
 import { EmptyState } from "@/components/rp/EmptyState";
 import { MASCOTES } from "@/lib/brandAssets";
+import { MAX_CODIGOS, documentoValido, extrairCodigos } from "@/lib/documento";
 
 const AVISOS = {
   limite: "Muitas consultas seguidas. Aguarde alguns minutos e tente novamente.",
@@ -33,11 +34,14 @@ export default function Tracking() {
   const codigoDoLink = new URLSearchParams(location.search).get("codigo")?.trim() || "";
   const inicial = location.state ?? (codigoDoLink ? { codigo: codigoDoLink } : {});
   const [codigo, setCodigo] = useState(inicial.codigo ?? "");
-  const [consulta, setConsulta] = useState(/** @type {{ estado: string, dados?: any }} */ ({ estado: "ocioso" }));
+  const [modo, setModo] = useState("codigo");
+  const [documento, setDocumento] = useState("");
+  const [erroEntrada, setErroEntrada] = useState("");
+  const [consulta, setConsulta] = useState(/** @type {{ estado: string, pedidos?: any[], naoEncontrados?: string[], truncado?: boolean, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
   const turnstileRef = useRef(null);
   // última consulta feita (para "Atualizar" e para a atualização automática, sem reler o que o visitante digitou depois)
-  const ultima = useRef(/** @type {{ codigo: string } | null} */ (null));
+  const ultima = useRef(/** @type {{ codigo?: string, codigos?: string[], documento?: string } | null} */ (null));
   const [atualizando, setAtualizando] = useState(false);
 
   // página de resultado fora dos buscadores
@@ -50,34 +54,47 @@ export default function Tracking() {
   }, []);
 
   // Cada consulta usa um token NOVO do Turnstile (o servidor recusa reaproveitado); `tokenPronto` é o que veio da home.
-  const consultarComToken = async (c, tokenPronto) => {
+  const consultarComToken = async (params, tokenPronto) => {
     let turnstileToken = tokenPronto;
     if (!turnstileToken) {
       try { turnstileToken = await turnstileRef.current.obterToken(); } catch { return { estado: "verificacao" }; }
     }
-    const r = await consultarRastreio({ codigo: c, turnstileToken });
+    const r = await consultarRastreio({ ...params, turnstileToken });
     // token vindo da home já usado/expirado (ex.: voltar no histórico): tenta uma vez com um token novo
-    if (r.estado === "verificacao" && tokenPronto) return consultarComToken(c, undefined);
+    if (r.estado === "verificacao" && tokenPronto) return consultarComToken(params, undefined);
     return r;
   };
 
-  const enviar = async (c = codigo, tokenPronto) => {
-    ultima.current = { codigo: c };
+  const executar = async (params, tokenPronto) => {
+    ultima.current = params;
     setConsulta({ estado: "carregando" });
-    setConsulta(await consultarComToken(c, tokenPronto));
+    setConsulta(await consultarComToken(params, tokenPronto));
+  };
+
+  // Monta a consulta do que foi digitado: um código, vários códigos (até 10) ou CPF/CNPJ.
+  const enviar = async (texto = codigo, tokenPronto) => {
+    setErroEntrada("");
+    if (modo === "documento") {
+      if (!documentoValido(documento)) { setErroEntrada("CPF ou CNPJ inválido. Confira os números."); return; }
+      return executar({ documento }, tokenPronto);
+    }
+    const lista = extrairCodigos(texto);
+    if (lista.length > MAX_CODIGOS) { setErroEntrada(`Informe no máximo ${MAX_CODIGOS} códigos por consulta.`); return; }
+    return executar(lista.length > 1 ? { codigos: lista } : { codigo: lista[0] ?? String(texto).trim() }, tokenPronto);
   };
 
   // Atualiza o resultado já exibido sem piscar a tela; se a nova consulta falhar, mantém o último resultado bom.
   const atualizar = async () => {
     if (!ultima.current || atualizando) return;
     setAtualizando(true);
-    const nova = await consultarComToken(ultima.current.codigo);
+    const nova = await consultarComToken(ultima.current);
     setAtualizando(false);
     if (nova.estado === "ok" || nova.estado === "nao_encontrado") setConsulta(nova);
   };
 
   // Pedido em rota: reconsulta sozinho a cada 90 s enquanto a aba estiver visível.
-  const emRota = consulta.estado === "ok" && consulta.dados?.em_rota === true;
+  const pedidos = consulta.estado === "ok" ? consulta.pedidos ?? (consulta.dados ? [consulta.dados] : []) : [];
+  const emRota = pedidos.some((p) => p?.em_rota === true);
   const atualizarRef = useRef(atualizar);
   atualizarRef.current = atualizar;
   useEffect(() => {
@@ -100,23 +117,33 @@ export default function Tracking() {
       <section className="section-y !pt-8 md:!pt-10">
         <div className="page-container max-w-[640px]">
           <Card className="!p-5 md:!p-6">
-            <FormRastreio codigo={codigo} onCodigo={setCodigo} turnstileRef={turnstileRef} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
+            <FormRastreio abas codigo={codigo} onCodigo={setCodigo} modo={modo} onModo={(m) => { setModo(m); setErroEntrada(""); }} documento={documento} onDocumento={setDocumento} erroDocumento={modo === "documento" ? erroEntrada : ""} turnstileRef={turnstileRef} onEnviar={() => enviar()} carregando={consulta.estado === "carregando"} />
             <p className="mt-4 flex gap-2 text-body-sm text-muted-foreground">
               <Icon name="info" size={18} className="shrink-0" />
-              <span>A consulta é feita somente pelo <strong className="text-foreground">código de rastreio</strong>. Número do pedido, NF-e e CPF/CNPJ não são aceitos.</span>
+              <span>Consulte pelo <strong className="text-foreground">código de rastreio</strong> (um ou vários) ou pelo <strong className="text-foreground">CPF/CNPJ</strong>. Número do pedido e NF-e não são aceitos.</span>
             </p>
           </Card>
 
           <div aria-live="polite">
             {consulta.estado === "nao_encontrado" && (
-              <div role="alert" className="mt-6"><EmptyState illustration={MASCOTES.circleThinking} title="Código não encontrado" subtitle={MENSAGEM_NAO_ENCONTRADO} /></div>
+              <div role="alert" className="mt-6">
+                <EmptyState illustration={MASCOTES.circleThinking} title={modo === "documento" ? "Nenhum pedido encontrado" : "Código não encontrado"} subtitle={modo === "documento" ? "Não encontramos pedidos para esse CPF/CNPJ. Confira o número digitado ou consulte pelo código de rastreio." : MENSAGEM_NAO_ENCONTRADO} />
+              </div>
             )}
             {aviso && (
               <p role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container">
                 <Icon name="report_problem" size={22} className="shrink-0" />{aviso}
               </p>
             )}
-            {consulta.estado === "ok" && <ResultadoRastreio dados={consulta.dados} onAtualizar={atualizar} atualizando={atualizando} />}
+            {erroEntrada && modo === "codigo" && <p role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container"><Icon name="report_problem" size={22} className="shrink-0" />{erroEntrada}</p>}
+            {consulta.estado === "ok" && consulta.naoEncontrados?.length > 0 && (
+              <p role="status" className="mt-6 flex items-start gap-3 rounded-2xl bg-[hsl(var(--status-amber-bg))] p-4 text-body-md text-[hsl(var(--status-amber-fg))]">
+                <Icon name="info" size={22} className="shrink-0" />
+                <span>Não encontramos: <span className="text-code-sm">{consulta.naoEncontrados.join(", ")}</span>. Confira os códigos.</span>
+              </p>
+            )}
+            {consulta.estado === "ok" && consulta.truncado && <p role="status" className="mt-6 text-body-sm text-muted-foreground">Mostrando os 20 pedidos mais recentes deste documento.</p>}
+            {pedidos.length > 0 && <ListaRastreio key={pedidos.map((p) => p.codigo).join("|")} pedidos={pedidos} onAtualizar={atualizar} atualizando={atualizando} />}
           </div>
 
           <section aria-labelledby="entenda" className="mt-12">

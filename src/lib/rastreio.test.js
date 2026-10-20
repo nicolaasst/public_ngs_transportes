@@ -22,6 +22,17 @@ describe("consultarRastreio", () => {
     expect(init.credentials).toBe("omit");
   });
 
+  it("vários códigos e CPF/CNPJ vão no corpo; a resposta { pedidos } é normalizada", async () => {
+    const buscar = vi.fn().mockResolvedValue(resposta(200, { pedidos: [{ codigo: "A" }, { codigo: "B" }], nao_encontrados: ["C"], truncado: true }));
+    const r = await consultarRastreio({ codigos: ["A", "B", "C"], turnstileToken: "t" }, { base: "https://a", buscar });
+    expect(JSON.parse(buscar.mock.calls[0][1].body)).toEqual({ codigos: ["A", "B", "C"], turnstile_token: "t" });
+    expect(r).toEqual({ estado: "ok", pedidos: [{ codigo: "A" }, { codigo: "B" }], naoEncontrados: ["C"], truncado: true });
+    await consultarRastreio({ documento: "529.982.247-25", turnstileToken: "t" }, { base: "https://a", buscar });
+    expect(JSON.parse(buscar.mock.calls[1][1].body)).toEqual({ documento: "529.982.247-25", turnstile_token: "t" });
+    await consultarRastreio({ codigos: ["A"], turnstileToken: "t" }, { base: "https://a", buscar });
+    expect(JSON.parse(buscar.mock.calls[2][1].body)).toEqual({ codigo: "A", turnstile_token: "t" });
+  });
+
   it.each([[404, "nao_encontrado"], [403, "verificacao"], [429, "limite"], [500, "indisponivel"], [503, "indisponivel"]])("HTTP %i vira %s", async (status, estado) => {
     expect((await consultarRastreio({ codigo: "NX-1", turnstileToken: "t" }, { base: "https://a", buscar: async () => resposta(status, {}) })).estado).toBe(estado);
   });
