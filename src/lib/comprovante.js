@@ -18,6 +18,13 @@ export function urlSegura(v) {
   }
 }
 
+/** Fotos do comprovante: [{ url, inline }] — `inline` é o data URL que o servidor já baixou (sem depender de CORS/cache). */
+export function fotosDoComprovante(c) {
+  const arquivos = (c?.arquivos || []).map(urlSegura);
+  const inline = Array.isArray(c?.imagens) ? c.imagens : [];
+  return arquivos.map((url, i) => ({ url, inline: typeof inline[i] === "string" && inline[i].startsWith("data:image/") ? inline[i] : null })).filter((f) => f.url);
+}
+
 export function temComprovante(dados) {
   return !!dados?.comprovante;
 }
@@ -29,7 +36,7 @@ export function nomeArquivo(dados) {
 /** Documento HTML do comprovante (para abrir/imprimir). Todo texto vindo da API é escapado. */
 export function htmlComprovante(dados) {
   const c = dados?.comprovante || {};
-  const arquivos = (c.arquivos || []).map(urlSegura).filter(Boolean);
+  const fotos = fotosDoComprovante(c);
   const eventos = (Array.isArray(dados?.eventos) ? dados.eventos : []).slice(0, 30);
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Comprovante de entrega ${esc(dados?.codigo)}</title>
@@ -42,7 +49,7 @@ footer{margin-top:28px;color:#777;font-size:11px;border-top:1px solid #eee;paddi
 <p><span class="ok">${esc(dados?.situacao || "Entregue")}</span></p>
 <dl><dt>Código de rastreio</dt><dd>${esc(dados?.codigo)}</dd><dt>Destino</dt><dd>${esc(dados?.destino)}</dd>
 <dt>Entregue em</dt><dd>${esc(fmt(c.entregue_em))}</dd><dt>Recebido por</dt><dd>${esc(c.recebido_por || "Não informado")}</dd></dl>
-${arquivos.length ? `<h2>Comprovação</h2><div class="fotos">${arquivos.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="Comprovação da entrega" referrerpolicy="no-referrer"></a>`).join("")}</div>` : ""}
+${fotos.length ? `<h2>Comprovação</h2><div class="fotos">${fotos.map((f) => `<a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer"><img src="${esc(f.inline || f.url)}" alt="Comprovação da entrega" referrerpolicy="no-referrer"></a>`).join("")}</div>` : ""}
 ${eventos.length ? `<h2>Histórico</h2><ol>${eventos.map((e) => `<li>${esc(e.texto)} — ${esc(fmt(e.em))}</li>`).join("")}</ol>` : ""}
 <footer>Documento informativo gerado a partir do rastreio público. Consulte o código em nosso portal para a situação atualizada.</footer>
 <p class="noprint"><button onclick="window.print()">Imprimir / salvar como PDF</button></p></body></html>`;
@@ -62,7 +69,7 @@ export function abrirComprovante(dados, { abrir = window.open.bind(window), cria
  * público do comprovante responde `Access-Control-Allow-Origin: *`); qualquer formato que o navegador decodifique vira JPEG.
  * Devolve null se a imagem não carregar (sem CORS, offline, URL quebrada): o PDF então traz o link no lugar.
  */
-export function carregarImagem(url, { max = 1200, tempoMs = 15000 } = {}) {
+export function carregarImagem(url, { max = 1200, tempoMs = 15000, inline = null } = {}) {
   return new Promise((resolve) => {
     const img = new Image();
     const timer = setTimeout(() => resolve(null), tempoMs);
@@ -83,12 +90,17 @@ export function carregarImagem(url, { max = 1200, tempoMs = 15000 } = {}) {
       } catch { fim(null); }
     };
     img.onerror = () => fim(null);
-    img.src = url;
+    // data URL (vindo do servidor): sem CORS nem cache. URL remota: pede de novo com um parâmetro novo, porque uma cópia
+    // antiga do arquivo no cache do navegador (guardada por um <img> sem CORS) volta SEM o cabeçalho CORS e "suja" o canvas.
+    if (inline) img.src = inline;
+    else {
+      try { const u = new URL(url); u.searchParams.set("_cors", String(Date.now())); img.src = u.toString(); } catch { img.src = url; }
+    }
   });
 }
 
 /** Baixa o comprovante em PDF (jsPDF carregado só quando o botão é usado), com as fotos de comprovação INCORPORADAS. */
-export async function baixarComprovante(dados, { carregar = carregarImagem } = {}) {
+export async function baixarComprovante(dados, { carregar = (url, inline) => carregarImagem(url, { inline }) } = {}) {
   const { jsPDF } = await import("jspdf");
   const c = dados?.comprovante || {};
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
@@ -111,12 +123,12 @@ export async function baixarComprovante(dados, { carregar = carregarImagem } = {
   linha(`Entregue em: ${fmt(c.entregue_em)}`);
   linha(`Recebido por: ${c.recebido_por || "Não informado"}`, 11, false, 9);
 
-  const arquivos = (c.arquivos || []).map(urlSegura).filter(Boolean).slice(0, 4);
-  if (arquivos.length) {
+  const fotos = fotosDoComprovante(c).slice(0, 4);
+  if (fotos.length) {
     linha("Comprovação", 12, true);
-    const imagens = await Promise.all(arquivos.map((u) => carregar(u)));
+    const imagens = await Promise.all(fotos.map((f) => carregar(f.url, f.inline)));
     imagens.forEach((img, i) => {
-      if (!img) { linha(`Foto ${i + 1} não pôde ser incorporada. Link: ${arquivos[i]}`, 8, false, 5); return; }
+      if (!img) { linha(`Foto ${i + 1} não pôde ser incorporada. Link: ${fotos[i].url}`, 8, false, 5); return; }
       const maxW = 120, maxH = 120;
       const proporcao = Math.min(maxW / img.w, maxH / img.h);
       const w = img.w * proporcao, h = img.h * proporcao;

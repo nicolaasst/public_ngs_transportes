@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Download, Printer, Share2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { abrirComprovante, baixarComprovante, compartilharRastreio, urlSegura } from "@/lib/comprovante";
+import { abrirComprovante, baixarComprovante, compartilharRastreio, fotosDoComprovante } from "@/lib/comprovante";
 
 const fmt = (iso) => {
   const d = iso ? new Date(iso) : null;
@@ -13,7 +13,7 @@ const botao = "inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded
 /** Modal do comprovante de entrega: informações + comprovação + Baixar / Compartilhar / Imprimir. */
 export default function ComprovanteModal({ dados, aberto, onFechar }) {
   const c = dados?.comprovante || {};
-  const arquivos = (c.arquivos || []).map(urlSegura).filter(Boolean);
+  const fotos = fotosDoComprovante(c);
   const [aviso, setAviso] = useState("");
   const [baixando, setBaixando] = useState(false);
 
@@ -42,13 +42,13 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
           <dt className="text-brand-text-secondary">Destino</dt><dd className="font-semibold">{dados?.destino || "—"}</dd>
         </dl>
 
-        {arquivos.length > 0 ? (
+        {fotos.length > 0 ? (
           <div>
             <p className="text-xs font-semibold mb-2">Comprovação</p>
             <div className="flex flex-wrap gap-2">
-              {arquivos.map((u) => (
-                <a key={u} href={u} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprovação em tamanho maior">
-                  <img src={u} alt="Comprovação da entrega" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-lg border border-brand-border object-cover" />
+              {fotos.map((f) => (
+                <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprovação em tamanho maior">
+                  <img src={f.inline || f.url} alt="Comprovação da entrega" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-lg border border-brand-border object-cover" />
                 </a>
               ))}
             </div>
