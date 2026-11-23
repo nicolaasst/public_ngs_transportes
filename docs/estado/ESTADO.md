@@ -8,7 +8,7 @@ Atualizado: 23/11/2026 (Orquestrador)
 | Missão | Status |
 |---|---|
 | POR-M1 CI, dependências, CSP mais estreita | **integrada** (`bd28a49`, `POR-M1-A1`) |
-| POR-M2 Usabilidade no celular e visual | planejada (depois da POR-M1) |
+| POR-M2 Usabilidade no celular e visual | **publicada** |
 
 Ações do dono:
 - Confirmar o domínio oficial (POR-06).
