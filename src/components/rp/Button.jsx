@@ -7,7 +7,7 @@ const variants = {
   ghost: "bg-accent text-accent-foreground",
   danger: "bg-destructive text-white active:bg-destructive-pressed",
 };
-const sizes = { md: "min-h-[52px] px-6", sm: "min-h-[40px] px-4 text-label-md" };
+const sizes = { md: "min-h-[52px] px-6", sm: "min-h-[44px] px-4 text-label-md" };
 
 /** Botão do App Delivery: pílula, ≥ 52px de altura, CTA com sombra. Renderiza <Link> quando recebe `to` e <a> quando recebe `href`. */
 export function Button({ variant = "primary", size = "md", loading = false, disabled, className = "", children, to, href, ...props }) {

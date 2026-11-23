@@ -16,7 +16,7 @@ export default function HelpCategory() {
   if (!category) {
     return (
       <PageShell titulo="Categoria não encontrada">
-        <Section><EmptyState illustration={MASCOTES.circleThinking} title="Categoria não encontrada" subtitle="Essa categoria não existe na central de ajuda." action={<Button to="/ajuda">Voltar à central de ajuda</Button>} /></Section>
+        <Section><EmptyState nivel={1} illustration={MASCOTES.circleThinking} title="Categoria não encontrada" subtitle="Essa categoria não existe na central de ajuda." action={<Button to="/ajuda">Voltar à central de ajuda</Button>} /></Section>
       </PageShell>
     );
   }

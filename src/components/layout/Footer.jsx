@@ -28,7 +28,7 @@ export default function Footer() {
               <h2 className="text-label-sm uppercase text-muted-foreground">{c.titulo}</h2>
               <ul className="mt-3 space-y-1">
                 {c.links.map(([rotulo, to]) => (
-                  <li key={rotulo}><Link to={to} className="rp-tap inline-flex min-h-[40px] items-center text-body-md hover:text-primary-deep">{rotulo}</Link></li>
+                  <li key={rotulo}><Link to={to} className="rp-tap inline-flex min-h-[44px] items-center text-body-md hover:text-primary-deep">{rotulo}</Link></li>
                 ))}
               </ul>
             </nav>

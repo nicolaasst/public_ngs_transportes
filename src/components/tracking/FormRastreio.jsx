@@ -34,9 +34,9 @@ export default function FormRastreio({ codigo, onCodigo, onEnviar, turnstileRef,
       )}
       <div id={`${idAbas}-painel`} role={abas ? "tabpanel" : undefined} aria-labelledby={abas ? `${idAbas}-${modo}` : undefined}>
         {porDocumento ? (
-          <Field label="CPF ou CNPJ" icon="badge" mono required inputMode="numeric" autoComplete="off" value={documento} onChange={(e) => onDocumento?.(mascararDocumento(e.target.value))} placeholder="000.000.000-00" error={erroDocumento} hint={erroDocumento ? undefined : "Mostra todos os pedidos ligados ao documento."} />
+          <Field label="CPF ou CNPJ" icon="badge" mono required inputMode="numeric" enterKeyHint="search" autoComplete="off" value={documento} onChange={(e) => onDocumento?.(mascararDocumento(e.target.value))} placeholder="000.000.000-00" error={erroDocumento} hint={erroDocumento ? undefined : "Mostra todos os pedidos ligados ao documento."} />
         ) : (
-          <Field id={idCodigo} label="Código de rastreio" icon="qr_code_2" mono required autoComplete="off" autoCapitalize="characters" spellCheck={false} value={codigo} onChange={(e) => onCodigo(e.target.value)} placeholder="Ex.: NGSBA123456789BR" hint={abas ? `Para vários pedidos, separe os códigos por vírgula ou espaço (até ${MAX_CODIGOS}).` : undefined} />
+          <Field id={idCodigo} label="Código de rastreio" icon="qr_code_2" mono required inputMode="text" enterKeyHint="search" autoComplete="off" autoCapitalize="characters" autoCorrect="off" spellCheck={false} value={codigo} onChange={(e) => onCodigo(e.target.value)} placeholder="Ex.: NGSBA123456789BR" hint={abas ? `Para vários pedidos, separe os códigos por vírgula ou espaço (até ${MAX_CODIGOS}).` : undefined} />
         )}
       </div>
       {siteKey ? <TurnstileWidget ref={turnstileRef} siteKey={siteKey} /> : <p role="alert" className="text-body-sm text-destructive">Verificação de segurança não configurada neste ambiente.</p>}

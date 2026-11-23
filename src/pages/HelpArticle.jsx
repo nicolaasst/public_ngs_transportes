@@ -17,7 +17,7 @@ export default function HelpArticle() {
   if (!category || !article) {
     return (
       <PageShell titulo="Artigo não encontrado">
-        <Section><EmptyState illustration={MASCOTES.circleThinking} title="Artigo não encontrado" subtitle="Esse artigo não existe ou foi movido." action={<Button to={category ? `/ajuda/${categoria}` : "/ajuda"}>Voltar</Button>} /></Section>
+        <Section><EmptyState nivel={1} illustration={MASCOTES.circleThinking} title="Artigo não encontrado" subtitle="Esse artigo não existe ou foi movido." action={<Button to={category ? `/ajuda/${categoria}` : "/ajuda"}>Voltar</Button>} /></Section>
       </PageShell>
     );
   }

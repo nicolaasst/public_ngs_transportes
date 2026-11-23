@@ -25,7 +25,7 @@ export default function HeroSection() {
   return (
     <section className="bg-accent text-foreground">
       <div className="page-container grid items-center gap-10 py-12 md:py-16 lg:grid-cols-2 lg:gap-14">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow">Logística terrestre e last mile</p>
           <h1 className="text-display-lg mt-3 md:!text-[48px] md:!leading-[56px]">
             Aproximando o seu negócio <span className="rounded-lg bg-primary px-1.5">dos seus clientes</span>, entrega por entrega.
@@ -37,7 +37,7 @@ export default function HeroSection() {
           </div>
           <img src={BRAND.container} alt="Contêiner NGS Transportes sendo içado, cercado por caixas com paraquedas" width="768" height="259" className="mt-10 w-full max-w-lg" />
         </div>
-        <Card className="!p-5 md:!p-7 text-card-foreground">
+        <Card className="min-w-0 !p-5 md:!p-7 text-card-foreground">
           <div className="mb-5 flex items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Icon name="package_2" size={26} filled /></span>
             <div>

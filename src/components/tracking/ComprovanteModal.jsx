@@ -45,9 +45,9 @@ export default function ComprovanteModal({ dados, aberto, onFechar }) {
           <div>
             <p className="text-label-sm uppercase text-muted-foreground mb-2">Comprovação</p>
             <div className="flex flex-wrap gap-2">
-              {fotos.map((f) => (
-                <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprovação em tamanho maior">
-                  <img src={f.inline || f.url} alt="Comprovação da entrega" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-2xl border border-border object-cover" />
+              {fotos.map((f, i) => (
+                <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir foto ${i + 1} da comprovação em tamanho maior`} className="rp-tap block rounded-2xl">
+                  <img src={f.inline || f.url} alt={`Foto ${i + 1} de ${fotos.length} da comprovação da entrega`} width="180" height="160" referrerPolicy="no-referrer" loading="lazy" className="max-h-40 max-w-[180px] rounded-2xl border border-border object-cover" />
                 </a>
               ))}
             </div>

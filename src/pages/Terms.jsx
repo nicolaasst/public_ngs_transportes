@@ -11,7 +11,7 @@ export default function Terms() {
       <PageHero eyebrow="Termos" titulo="Condições gerais de contratação e transporte" texto="Documento de referência para as operações terrestres da NGS Transportes." />
       <Section>
         <div className="max-w-3xl">
-          <Disclosure itens={clauses.map((c, i) => ({ titulo: `${String(i + 1).padStart(2, "0")} · ${c.title}`, conteudo: c.content }))} />
+          <Disclosure nivel={2} itens={clauses.map((c, i) => ({ titulo: `${String(i + 1).padStart(2, "0")} · ${c.title}`, conteudo: c.content }))} />
         </div>
       </Section>
     </PageShell>

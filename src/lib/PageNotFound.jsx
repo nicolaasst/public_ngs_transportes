@@ -11,6 +11,7 @@ export default function PageNotFound() {
     <PageShell titulo="Página não encontrada">
       <Section>
         <EmptyState
+          nivel={1}
           illustration={MASCOTES.circleThinking}
           title="Página não encontrada"
           subtitle={`O endereço "${pathname}" não existe neste site.`}
