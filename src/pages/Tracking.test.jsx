@@ -326,3 +326,73 @@ describe("abas, vários códigos e CPF/CNPJ", () => {
     expect(await screen.findByTestId("evento-atual")).toBeInTheDocument();
   });
 });
+
+describe("usabilidade e acessibilidade (POR-M2)", () => {
+  it("o campo de código pede teclado de texto, maiúsculas, sem autocorreção e com tecla 'buscar'", () => {
+    abrir();
+    const campo = screen.getByLabelText("Código de rastreio");
+    expect(campo).toHaveAttribute("inputmode", "text");
+    expect(campo).toHaveAttribute("autocapitalize", "characters");
+    expect(campo).toHaveAttribute("autocorrect", "off");
+    expect(campo).toHaveAttribute("enterkeyhint", "search");
+    expect(campo).toHaveAttribute("autocomplete", "off");
+  });
+
+  it("falha de rede oferece 'Tentar novamente' e a nova tentativa consulta de novo", async () => {
+    consultar.mockResolvedValueOnce({ estado: "rede" }).mockResolvedValueOnce({ estado: "ok", dados: dados() });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Não foi possível conectar/);
+    await user.click(screen.getByRole("button", { name: /tentar novamente/i }));
+    expect(await screen.findByText("Em rota de entrega")).toBeInTheDocument();
+    expect(consultar).toHaveBeenCalledTimes(2);
+  });
+
+  it("limite de consultas não oferece repetir (pede para aguardar)", async () => {
+    consultar.mockResolvedValue({ estado: "limite" });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Aguarde/);
+    expect(screen.queryByRole("button", { name: /tentar novamente/i })).not.toBeInTheDocument();
+  });
+
+  it("'Código não encontrado' tem a ação 'Conferir o código', que devolve o foco ao campo", async () => {
+    consultar.mockResolvedValue({ estado: "nao_encontrado" });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    await user.click(await screen.findByRole("button", { name: /conferir o código/i }));
+    expect(screen.getByLabelText("Código de rastreio")).toHaveFocus();
+  });
+
+  it("anuncia a quantidade de pedidos para leitor de tela e leva o resultado à vista", async () => {
+    const rolar = vi.fn();
+    Element.prototype.scrollIntoView = rolar;
+    consultar.mockResolvedValue({ estado: "ok", dados: dados() });
+    const user = userEvent.setup();
+    const { container } = abrir();
+    await preencher(user);
+    await screen.findByText("Em rota de entrega");
+    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent("1 pedido encontrado.");
+    await waitFor(() => expect(rolar).toHaveBeenCalled());
+  });
+
+  it("as fotos do comprovante têm alt próprio, dimensões e carregamento preguiçoso", async () => {
+    const entregue = dados({ em_rota: false, situacao: "Entregue", comprovante: { entregue_em: "2026-10-17T15:00:00Z", recebido_por: "Maria S.", arquivos: ["https://pub.exemplo/f1.jpg", "https://pub.exemplo/f2.jpg"] } });
+    consultar.mockResolvedValue({ estado: "ok", dados: entregue });
+    const user = userEvent.setup();
+    abrir();
+    await preencher(user);
+    await user.click(await screen.findByRole("button", { name: /abrir comprovante de entrega/i }));
+    const foto = await screen.findByAltText("Foto 1 de 2 da comprovação da entrega");
+    expect(screen.getByAltText("Foto 2 de 2 da comprovação da entrega")).toBeInTheDocument();
+    expect(foto).toHaveAttribute("width");
+    expect(foto).toHaveAttribute("height");
+    expect(foto).toHaveAttribute("loading", "lazy");
+    // Esc fecha o modal
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+});

@@ -6,6 +6,7 @@ import FormRastreio from "@/components/tracking/FormRastreio";
 import ListaRastreio from "@/components/tracking/ListaRastreio";
 import { consultarRastreio, MENSAGEM_NAO_ENCONTRADO } from "@/lib/rastreio";
 import { Card } from "@/components/rp/Card";
+import { Button } from "@/components/rp/Button";
 import { Icon } from "@/components/rp/Icon";
 import { StatusPill } from "@/components/rp/StatusPill";
 import { EmptyState } from "@/components/rp/EmptyState";
@@ -18,6 +19,15 @@ const AVISOS = {
   indisponivel: "O rastreio está indisponível no momento. Tente novamente em instantes.",
   rede: "Não foi possível conectar. Verifique sua internet e tente novamente.",
   nao_configurado: "O rastreio online ainda não está habilitado neste ambiente. Fale com o nosso atendimento.",
+};
+
+// estados de falha em que "tentar de novo" resolve (limite 429 e entrada inválida pedem espera/correção, não repetição)
+const REPETIVEIS = new Set(["verificacao", "indisponivel", "rede"]);
+const focarCampo = () => { const campo = document.querySelector("form input:not([type=hidden])"); campo?.focus(); campo?.select(); };
+const resumo = (c, pedidos) => {
+  if (c.estado === "carregando") return "Consultando o rastreio…";
+  if (c.estado === "ok") return pedidos.length === 1 ? "1 pedido encontrado." : `${pedidos.length} pedidos encontrados.`;
+  return ""; // erros e "não encontrado" já são anunciados pelo próprio role="alert"
 };
 
 const ETAPAS = [
@@ -40,6 +50,7 @@ export default function Tracking() {
   const [consulta, setConsulta] = useState(/** @type {{ estado: string, pedidos?: any[], naoEncontrados?: string[], truncado?: boolean, dados?: any }} */ ({ estado: "ocioso" }));
   const jaConsultou = useRef(false);
   const turnstileRef = useRef(null);
+  const resultadoRef = useRef(null);
   // última consulta feita (para "Atualizar" e para a atualização automática, sem reler o que o visitante digitou depois)
   const ultima = useRef(/** @type {{ codigo?: string, codigos?: string[], documento?: string } | null} */ (null));
   const [atualizando, setAtualizando] = useState(false);
@@ -69,6 +80,8 @@ export default function Tracking() {
     ultima.current = params;
     setConsulta({ estado: "carregando" });
     setConsulta(await consultarComToken(params, tokenPronto));
+    // no celular o resultado fica abaixo do formulário e do anti-robô: leva a tela até ele
+    requestAnimationFrame(() => resultadoRef.current?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
   };
 
   // Monta a consulta do que foi digitado: um código, vários códigos (até 10) ou CPF/CNPJ.
@@ -124,16 +137,20 @@ export default function Tracking() {
             </p>
           </Card>
 
-          <div aria-live="polite">
+          {/* anúncio curto para leitor de tela (o resultado inteiro não é anunciado) */}
+          <p aria-live="polite" className="sr-only">{resumo(consulta, pedidos)}</p>
+          <div ref={resultadoRef} className="scroll-mt-20">
             {consulta.estado === "nao_encontrado" && (
               <div role="alert" className="mt-6">
-                <EmptyState illustration={MASCOTES.circleThinking} title={modo === "documento" ? "Nenhum pedido encontrado" : "Código não encontrado"} subtitle={modo === "documento" ? "Não encontramos pedidos para esse CPF/CNPJ. Confira o número digitado ou consulte pelo código de rastreio." : MENSAGEM_NAO_ENCONTRADO} />
+                <EmptyState illustration={MASCOTES.circleThinking} title={modo === "documento" ? "Nenhum pedido encontrado" : "Código não encontrado"} subtitle={modo === "documento" ? "Não encontramos pedidos para esse CPF/CNPJ. Confira o número digitado ou consulte pelo código de rastreio." : MENSAGEM_NAO_ENCONTRADO}
+                  action={<Button variant="outline" size="sm" onClick={focarCampo}><Icon name="edit" size={18} />{modo === "documento" ? "Conferir o número" : "Conferir o código"}</Button>} />
               </div>
             )}
             {aviso && (
-              <p role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container">
-                <Icon name="report_problem" size={22} className="shrink-0" />{aviso}
-              </p>
+              <div role="alert" className="mt-6 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container">
+                <p className="flex items-start gap-3"><Icon name="report_problem" size={22} className="shrink-0" />{aviso}</p>
+                {REPETIVEIS.has(consulta.estado) && <Button variant="outline" size="sm" className="mt-3" onClick={() => enviar()}><Icon name="refresh" size={18} />Tentar novamente</Button>}
+              </div>
             )}
             {erroEntrada && modo === "codigo" && <p role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-error-container p-4 text-body-md text-error-on-container"><Icon name="report_problem" size={22} className="shrink-0" />{erroEntrada}</p>}
             {consulta.estado === "ok" && consulta.naoEncontrados?.length > 0 && (

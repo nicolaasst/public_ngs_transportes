@@ -1,0 +1,4 @@
+home antes performance=73 accessibility=100 best-practices=96 seo=100 LCP=11.3 s TBT=180 ms CLS=0.001
+home depois performance=75 accessibility=100 best-practices=96 seo=100 LCP=10.1 s TBT=70 ms CLS=0.001
+rastreamento antes performance=100 accessibility=100 best-practices=96 seo=66 LCP=0.8 s TBT=70 ms CLS=0.028
+rastreamento depois performance=100 accessibility=100 best-practices=96 seo=63 LCP=0.8 s TBT=70 ms CLS=0.028

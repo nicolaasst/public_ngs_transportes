@@ -1,10 +1,17 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { descricaoDaPagina } from "@/lib/paginas";
 import Header from "./Header";
 import Footer from "./Footer";
 
-/** Casca de todas as páginas: cabeçalho, conteúdo e rodapé. `titulo` ajusta o <title> da aba. */
-export default function PageShell({ titulo, children }) {
+/** Casca de todas as páginas: cabeçalho, conteúdo e rodapé. `titulo` ajusta o <title> da aba e `descricao` a meta description. */
+export default function PageShell({ titulo, descricao, children }) {
+  const { pathname } = useLocation();
   useEffect(() => { if (titulo) document.title = `${titulo} | NGS Transportes`; }, [titulo]);
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", descricaoDaPagina(pathname, descricao));
+  }, [pathname, descricao]);
   return (
     <div className="app-shell flex flex-col">
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-primary focus:px-5 focus:py-3 focus:text-label-lg focus:text-primary-foreground">Ir para o conteúdo</a>
