@@ -1,0 +1,5 @@
+- id: DEC-POR-001
+  data: 2026-11-23
+  tema: Rastreio por CPF/CNPJ mostra o comprovante (POR-01)
+  decisao: "Deixar como está"
+  efeito: Risco aceito pelo dono. Quem tiver o CPF/CNPJ vê até 20 entregas com nome de quem recebeu e fotos. Reavaliar se houver reclamação ou incidente.
