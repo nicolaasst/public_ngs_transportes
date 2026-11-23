@@ -5,8 +5,7 @@
 ## Método
 `vite build` com API/Turnstile fictícios + `vite preview`; Playwright (Chromium) com a API interceptada. Estados do rastreio: vazio, link `?codigo=`, em trânsito, entregue com 2 fotos (modal aberto), não encontrado, limite 429, erro de rede, vários códigos com 1 não encontrado, CPF com 20 pedidos truncado. Todas as 13 rotas (inclui categoria e artigo de ajuda inexistentes e 404) e os 9 estados em 360, 390, 768 e 1280 px. Scripts ficaram fora do repositório. axe-core entra como `devDependency`; Lighthouse 13 rodou fora do repositório.
 
-- Capturas antes: `POR-M2/antes/` · depois: `POR-M2/depois/` · lado a lado (390 px, antes à esquerda): `POR-M2/lado-a-lado/` (6 imagens).
-- `antes/axe-antes.json`, `depois/axe-depois.json`, `lighthouse-resumo.txt`.
+- Ficam no repositório só `POR-M2/lado-a-lado/` (6 imagens, 390 px, antes à esquerda) e `POR-M2/lighthouse-resumo.txt`. **As capturas completas (todas as rotas e estados, 4 larguras, antes e depois, 182 imagens, 43 MB) e os JSON do axe ficaram fora do repositório por tamanho**; os números do axe e do Lighthouse estão na tabela abaixo.
 
 ## Números
 | Medida | Antes | Depois |
@@ -19,7 +18,7 @@
 
 Lighthouse acessibilidade em `/rastreamento` já era 100 (meta ≥ 95 atendida antes e depois). SEO do rastreio fica baixo por escolha: a página tem `noindex` (resultado fora dos buscadores), e `is-crawlable` é o único item reprovado; a variação 66→63 é só o peso dos itens. Os erros de console do Lighthouse não aparecem na lista (0).
 
-## Correções (cada uma com a captura antes/depois nas pastas acima)
+## Correções (as principais têm captura antes/depois em `lado-a-lado/`)
 1. **Erros com ação** (`Tracking.jsx`): falha de rede, indisponível e verificação ganham "Tentar novamente"; "Código/Nenhum pedido encontrado" ganha "Conferir o código" (foca o campo). Limite 429 só pede para aguardar, sem repetir. Ver `lado-a-lado/rastreamento-erro-rede…` e `…-nao-encontrado…`.
 2. **Resultado à vista no celular:** após consultar, a tela rola até o resultado (respeita `prefers-reduced-motion`). Nas capturas de página inteira isso aparece como o cabeçalho fixo no meio da imagem; é artefato da captura.
 3. **Leitor de tela:** saiu o `aria-live` que envolvia todo o resultado; entrou um anúncio curto ("N pedido(s) encontrado(s)", "Consultando…"). Erros continuam com `role="alert"`.
@@ -38,4 +37,4 @@ Lighthouse acessibilidade em `/rastreamento` já era 100 (meta ≥ 95 atendida a
 ## Limites
 - Dados e Turnstile simulados; não vi o widget real nem fotos reais (já testados em produção pela POR-M1).
 - Lighthouse da home continua 75: o LCP (imagem do contêiner do hero, 229 KB) segue alto em rede simulada lenta. Reduzir isso exigiria recomprimir/trocar imagens do hero (mudança visual), que deixei fora. `mapa-light-390x844.png` (288 KB) também ficou como está.
-- O peso das capturas (~43 MB em PNG de página inteira) está no repositório porque a missão pede as imagens em `docs/`.
+- As capturas completas e os JSON do axe não estão no repositório (tamanho); só as 6 comparações lado a lado.

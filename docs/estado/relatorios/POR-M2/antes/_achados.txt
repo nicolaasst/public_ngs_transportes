@@ -1,1 +1,0 @@
-rolagem horizontal 2px em / @360
