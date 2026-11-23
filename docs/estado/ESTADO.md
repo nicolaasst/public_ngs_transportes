@@ -7,9 +7,8 @@ Atualizado: 23/11/2026 (Orquestrador)
 
 | Missão | Status |
 |---|---|
-| POR-M1 CI, dependências, CSP mais estreita | **publicada** |
+| POR-M1 CI, dependências, CSP mais estreita | **integrada** (`bd28a49`, `POR-M1-A1`) |
 | POR-M2 Usabilidade no celular e visual | planejada (depois da POR-M1) |
 
 Ações do dono:
-- Depois de publicar as funções do Tracker e testar o rastreio: tirar `RASTREIO_PUBLICO_ACAO_OPCIONAL` (POR-04).
 - Confirmar o domínio oficial (POR-06).
